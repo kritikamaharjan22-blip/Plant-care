@@ -21,6 +21,7 @@ UI_TRANSLATIONS = {
         'upload_title': 'Upload a leaf image',
         'upload_hint': 'Drag & drop or click to browse',
         'browse_btn': '📁 Choose Image',
+        'choose_another_btn': '📁 Choose Another Image',
         'analyze_btn': '🔍 Analyze Plant',
         
         # Loading
@@ -28,17 +29,18 @@ UI_TRANSLATIONS = {
         
         # Results
         'confidence': 'Confidence',
-        'healthy_status': '🌿 Your plant appears healthy! Keep up the good care!',
-        'disease_status': '🔬 Disease detected. See care instructions below.',
-        'care_title': '📋 Care Instructions',
+        'resultHealthy': '🌿 Your plant appears healthy!',
+        'resultDisease': '⚠️ Disease detected!',
+        'care_title': '📋 Post Care Guidance',
         
         # Care Sections
-        'what_to_do': '⚡ What to do NOW:',
-        'treatment_options': '🌿 Treatment Options:',
-        'consult_doctor': '👨‍⚕️ When to Consult a Doctor:',
-        'safety_warnings': '⚠️ Important Safety Warnings:',
-        'prevention': '🛡️ Prevention:',
-        'success_rate': '📊 Success Rate:',
+        'what_to_do': 'What to do now',
+        'treatment_options': 'Treatment options',
+        'consult_doctor': 'When to Consult a Doctor',
+        'safety_warnings': 'Important Safety Warnings',
+        'prevention': 'Prevention',
+        'success_rate': 'Success rate',
+        'note': 'Note',
         
         # Footer
         'footer': '🌱 Keep your plants healthy with Plant Care',
@@ -72,6 +74,7 @@ UI_TRANSLATIONS = {
         'upload_title': 'पातको फोटो अपलोड गर्नुहोस्',
         'upload_hint': 'तान्नुहोस् र छोड्नुहोस् वा ब्राउज गर्न क्लिक गर्नुहोस्',
         'browse_btn': '📁 फोटो छान्नुहोस्',
+        'choose_another_btn': '📁 अर्को फोटो छान्नुहोस्',
         'analyze_btn': '🔍 बिरुवा विश्लेषण गर्नुहोस्',
         
         # Loading
@@ -79,17 +82,18 @@ UI_TRANSLATIONS = {
         
         # Results
         'confidence': 'विश्वसनीयता',
-        'healthy_status': '🌿 तपाईंको बिरुवा स्वस्थ देखिन्छ! राम्रो हेरचाह जारी राख्नुहोस्!',
-        'disease_status': '🔬 रोग पत्ता लाग्यो। तल हेरचाह निर्देशनहरू हेर्नुहोस्।',
-        'care_title': '📋 हेरचाह निर्देशनहरू',
+        'resultHealthy': '🌿 तपाईंको बिरुवा स्वस्थ देखिन्छ!',
+        'resultDisease': '⚠️ रोग पत्ता लाग्यो!',
+        'care_title': '📋 पोस्ट केयर गाइडेन्स',
         
         # Care Sections
-        'what_to_do': '⚡ अब के गर्ने:',
-        'treatment_options': '🌿 उपचार विकल्पहरू:',
-        'consult_doctor': '👨‍⚕️ डाक्टरलाई कहिले सोध्ने:',
-        'safety_warnings': '⚠️ महत्वपूर्ण सुरक्षा चेतावनी:',
-        'prevention': '🛡️ रोकथाम:',
-        'success_rate': '📊 सफलता दर:',
+        'what_to_do': 'अब के गर्ने',
+        'treatment_options': 'उपचार विकल्पहरू',
+        'consult_doctor': 'डाक्टरलाई कहिले सोध्ने',
+        'safety_warnings': 'महत्वपूर्ण सुरक्षा चेतावनी',
+        'prevention': 'रोकथाम',
+        'success_rate': 'सफलता दर',
+        'note': 'नोट',
         
         # Footer
         'footer': '🌱 प्लान्ट केयरसँग आफ्नो बिरुवाहरू स्वस्थ राख्नुहोस्',

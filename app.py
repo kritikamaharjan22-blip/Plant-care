@@ -1,4 +1,4 @@
-# app.py - COMPLETE FIXED VERSION
+# app.py - COMPLETE UPDATED VERSION
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -60,7 +60,7 @@ except:
         exit()
 
 # ============================================
-# HTML - COMPLETE FIXED VERSION
+# HTML - COMPLETE UPDATED VERSION
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -140,8 +140,6 @@ HTML_TEMPLATE = '''
         .header .btn-sm:hover { transform: scale(1.05); }
         .header .btn-sm .emoji { font-size: 20px; }
         
-        .btn-speech { background: #2196F3; color: white; }
-        .btn-speech.speaking { background: #f44336; }
         .btn-tutorial { background: #ff9800; color: white; }
         
         .lang-toggle {
@@ -181,6 +179,7 @@ HTML_TEMPLATE = '''
         }
         #dropZone:hover { border-color: #43a047; background: #e8f5e9; }
         #dropZone.dragover { border-color: #2e7d32; background: #c8e6c9; }
+        #dropZone.has-image { padding: 15px 20px; }
         .upload-icon { font-size: 56px; margin-bottom: 8px; }
         .hint { color: #81c784; font-size: 14px; margin-top: 4px; }
         .btn-upload {
@@ -198,8 +197,26 @@ HTML_TEMPLATE = '''
             z-index: 1;
         }
         .btn-upload:hover { transform: scale(1.05); }
+        .btn-upload-small {
+            padding: 8px 20px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
         #fileInput { display: none; }
-        #preview { max-width: 100%; max-height: 180px; margin: 10px 0; border-radius: 12px; display: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #preview {
+            max-width: 100%;
+            max-height: 250px;
+            margin: 10px auto;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #preview.show { display: block; }
+        
+        .image-container {
+            text-align: center;
+            width: 100%;
+        }
 
         .analyze-wrapper { margin-top: 16px; width: 100%; }
         .btn-predict {
@@ -266,10 +283,7 @@ HTML_TEMPLATE = '''
         .care-section-block ul { padding-left: 20px; margin: 0; }
         .care-section-block ul li { margin-bottom: 4px; color: #333; font-size: 14px; line-height: 1.5; }
         .care-section-block p { margin: 0; color: #333; font-size: 14px; line-height: 1.5; }
-        .doctor-advice { border-left-color: #f44336; background: #ffebee; }
-        .safety-warnings { border-left-color: #ff9800; background: #fff3e0; }
-        .prevention { border-left-color: #2196f3; background: #e3f2fd; }
-        .success-rate { border-left-color: #9c27b0; background: #f3e5f5; }
+        .care-section-block.note { border-left-color: #ff9800; background: #fff3e0; }
 
         .footer { text-align: center; margin-top: 18px; color: #a5d6a7; font-size: 12px; }
 
@@ -351,13 +365,15 @@ HTML_TEMPLATE = '''
             .header .btn-sm { font-size: 12px; padding: 6px 12px; }
             .header .btn-sm .emoji { font-size: 16px; }
             .lang-toggle { font-size: 12px; padding: 6px 12px; }
+            .tutorial-modal-content .dummy-video { height: 250px; font-size: 18px; }
+            .tutorial-modal-content .dummy-video .big-icon { font-size: 60px; }
         }
     </style>
 </head>
 <body>
     <!-- MAIN TITLE -->
     <div class="main-title">
-        <span class="leaf">🌿</span> PLANT CARE
+        <span class="leaf">🌿</span> <span id="appTitle">PLANT CARE</span>
         <span class="sub" id="mainSubtitle">Smart Disease Detection for Your Plants</span>
     </div>
 
@@ -388,13 +404,21 @@ HTML_TEMPLATE = '''
             <span class="badge badge-potato">🥔 Potato</span>
         </div>
 
+        <!-- Upload Area -->
         <div class="upload-area" id="dropZone">
-            <div class="upload-icon">📸</div>
+            <div class="upload-icon" id="uploadIcon">📸</div>
             <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
             <p class="hint" id="hintText">Drag &amp; drop or click to browse</p>
             <label class="btn-upload" for="fileInput" id="browseBtn">📁 Choose Image</label>
             <input type="file" id="fileInput" accept="image/*">
-            <img id="preview" alt="Preview">
+            
+            <!-- Image preview container -->
+            <div class="image-container">
+                <img id="preview" alt="Preview">
+            </div>
+            
+            <!-- Choose Another Image button (hidden by default) -->
+            <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">📁 Choose Another Image</label>
         </div>
 
         <div class="analyze-wrapper">
@@ -458,15 +482,19 @@ HTML_TEMPLATE = '''
         let diseaseData = null;
         let isSpeaking = false;
         let speechSynth = window.speechSynthesis;
+        let hasImage = false;
 
         // ============================================
         // DOM REFERENCES
         // ============================================
         const elements = {
+            appTitle: document.getElementById('appTitle'),
             mainSubtitle: document.getElementById('mainSubtitle'),
             uploadText: document.getElementById('uploadText'),
+            uploadIcon: document.getElementById('uploadIcon'),
             hintText: document.getElementById('hintText'),
             browseBtn: document.getElementById('browseBtn'),
+            chooseAnotherBtn: document.getElementById('chooseAnotherBtn'),
             predictBtn: document.getElementById('predictBtn'),
             loadingText: document.getElementById('loadingText'),
             footerText: document.getElementById('footerText'),
@@ -495,7 +523,7 @@ HTML_TEMPLATE = '''
         };
 
         // ============================================
-        // TRANSLATION FUNCTION - FIXED
+        // TRANSLATION FUNCTION - FULL PAGE TRANSLATION
         // ============================================
         function translatePage(lang) {
             // Get translations for the requested language
@@ -506,15 +534,21 @@ HTML_TEMPLATE = '''
                 t = UI_TEXT['en'] || {};
             }
             
+            // Update app title
+            if (elements.appTitle) {
+                elements.appTitle.textContent = t.app_title || 'PLANT CARE';
+            }
+            
             // Update main title subtitle
             if (elements.mainSubtitle) {
                 elements.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
             }
             
-            // Update upload area
+            // Update upload area - ALL TEXT
             if (elements.uploadText) elements.uploadText.textContent = t.upload_title || 'Upload a leaf image';
             if (elements.hintText) elements.hintText.textContent = t.upload_hint || 'Drag & drop or click to browse';
             if (elements.browseBtn) elements.browseBtn.textContent = t.browse_btn || '📁 Choose Image';
+            if (elements.chooseAnotherBtn) elements.chooseAnotherBtn.textContent = t.choose_another_btn || '📁 Choose Another Image';
             if (elements.predictBtn) elements.predictBtn.textContent = t.analyze_btn || '🔍 Analyze Plant';
             if (elements.loadingText) elements.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
             if (elements.footerText) elements.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
@@ -524,29 +558,32 @@ HTML_TEMPLATE = '''
             
             // Update language toggle - show OPPOSITE language name
             if (elements.langLabel) {
-                // When in English, show "नेपाली" (Nepali in Nepali script)
-                // When in Nepali, show "English"
                 elements.langLabel.textContent = lang === 'en' ? 'नेपाली' : 'English';
             }
             if (elements.langIcon) {
                 elements.langIcon.textContent = lang === 'en' ? '🇳🇵' : '🇬🇧';
             }
             
-            // Update care title
-            if (elements.careTitle) {
-                const titleText = lang === 'en' ? '📋 Post Care Guidance' : '📋 पोस्ट केयर गाइडेन्स';
-                elements.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + (lang === 'en' ? 'EN' : 'ने') + '</span>';
-            }
-            
-            // Update lang badge
-            if (elements.langBadge) elements.langBadge.textContent = lang === 'en' ? 'EN' : 'ने';
-            
             // Update result status if exists
             if (diseaseData) {
                 displayResult(diseaseData);
             }
             
+            // Update care section title
+            updateCareSectionTitle();
+            
             currentLang = lang;
+        }
+
+        function updateCareSectionTitle() {
+            if (elements.careTitle) {
+                const titleText = currentLang === 'en' ? '📋 Post Care Guidance' : '📋 पोस्ट केयर गाइडेन्स';
+                const badge = currentLang === 'en' ? 'EN' : 'ने';
+                elements.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+            }
+            if (elements.langBadge) {
+                elements.langBadge.textContent = currentLang === 'en' ? 'EN' : 'ने';
+            }
         }
 
         // ============================================
@@ -556,7 +593,6 @@ HTML_TEMPLATE = '''
             const modal = elements.tutorialModal;
             const container = elements.tutorialVideoContainer;
             
-            // Different content based on language
             if (currentLang === 'en') {
                 container.innerHTML = `
                     <div class="dummy-video">
@@ -595,17 +631,30 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // FILE UPLOAD
+        // FILE UPLOAD - UPDATED
         // ============================================
         elements.fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 selectedFile = this.files[0];
+                hasImage = true;
                 elements.predictBtn.disabled = false;
                 elements.resultDiv.style.display = 'none';
                 elements.careSection.classList.remove('visible');
                 diseaseData = null;
+                
                 const reader = new FileReader();
-                reader.onload = (e) => { elements.preview.src = e.target.result; elements.preview.style.display = 'block'; };
+                reader.onload = (e) => {
+                    elements.preview.src = e.target.result;
+                    elements.preview.classList.add('show');
+                    // Hide upload icon and text, show the image
+                    elements.uploadIcon.style.display = 'none';
+                    elements.uploadText.style.display = 'none';
+                    elements.hintText.style.display = 'none';
+                    elements.browseBtn.style.display = 'none';
+                    // Show "Choose Another Image" button
+                    elements.chooseAnotherBtn.style.display = 'inline-block';
+                    elements.dropZone.classList.add('has-image');
+                };
                 reader.readAsDataURL(selectedFile);
             }
         });
@@ -617,19 +666,29 @@ HTML_TEMPLATE = '''
             this.classList.remove('dragover');
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 selectedFile = e.dataTransfer.files[0];
+                hasImage = true;
                 elements.predictBtn.disabled = false;
                 elements.resultDiv.style.display = 'none';
                 elements.careSection.classList.remove('visible');
                 diseaseData = null;
                 elements.fileInput.files = e.dataTransfer.files;
                 const reader = new FileReader();
-                reader.onload = (e) => { elements.preview.src = e.target.result; elements.preview.style.display = 'block'; };
+                reader.onload = (e) => {
+                    elements.preview.src = e.target.result;
+                    elements.preview.classList.add('show');
+                    elements.uploadIcon.style.display = 'none';
+                    elements.uploadText.style.display = 'none';
+                    elements.hintText.style.display = 'none';
+                    elements.browseBtn.style.display = 'none';
+                    elements.chooseAnotherBtn.style.display = 'inline-block';
+                    elements.dropZone.classList.add('has-image');
+                };
                 reader.readAsDataURL(selectedFile);
             }
         });
 
         // ============================================
-        // PREDICT - FIXED
+        // PREDICT
         // ============================================
         elements.predictBtn.addEventListener('click', async function() {
             if (!selectedFile) return;
@@ -641,7 +700,6 @@ HTML_TEMPLATE = '''
             elements.loadingDiv.style.display = 'block';
             elements.resultDiv.style.display = 'none';
             elements.careSection.classList.remove('visible');
-            elements.preview.style.display = 'none';
 
             try {
                 console.log('📤 Sending prediction request...');
@@ -698,7 +756,7 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // DISPLAY RESULT - FIXED
+        // DISPLAY RESULT - UPDATED with simplified care
         // ============================================
         function displayResult(data) {
             const isHealthy = data.class.includes('Healthy');
@@ -722,69 +780,49 @@ HTML_TEMPLATE = '''
             elements.resultStatus.textContent = statusText;
             elements.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
 
+            // Simplified Care Section - Only "What to do now" and "Note"
             if (data.care) {
                 elements.careSection.classList.add('visible');
-                const care = data.care;
-                const titleText = lang === 'en' ? '📋 Post Care Guidance' : '📋 पोस्ट केयर गाइडेन्स';
-                elements.careTitle.innerHTML = titleText + ' <span class="translation-badge">' + (lang === 'en' ? 'EN' : 'ने') + '</span>';
+                updateCareSectionTitle();
 
                 let html = '';
 
-                if (care.immediate_actions && care.immediate_actions.length > 0) {
+                // What to do now - immediate actions and treatment options combined
+                const actions = [];
+                if (data.care.immediate_actions && data.care.immediate_actions.length > 0) {
+                    actions.push(...data.care.immediate_actions);
+                }
+                if (data.care.treatment_options && data.care.treatment_options.length > 0) {
+                    actions.push(...data.care.treatment_options);
+                }
+
+                if (actions.length > 0) {
                     html += `
                         <div class="care-section-block">
                             <h4>${t.what_to_do || 'What to do now'}</h4>
                             <ul>
-                                ${care.immediate_actions.map(a => `<li>${a}</li>`).join('')}
+                                ${actions.map(a => `<li>${a}</li>`).join('')}
                             </ul>
                         </div>
                     `;
                 }
 
-                if (care.treatment_options && care.treatment_options.length > 0) {
+                // Note - combines consult_doctor, safety_warnings, prevention, success_rate
+                const notes = [];
+                if (data.care.consult_doctor) notes.push(data.care.consult_doctor);
+                if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
+                    notes.push(...data.care.safety_warnings);
+                }
+                if (data.care.prevention) notes.push(data.care.prevention);
+                if (data.care.success_rate) notes.push(data.care.success_rate);
+
+                if (notes.length > 0) {
                     html += `
-                        <div class="care-section-block">
-                            <h4>${t.treatment_options || 'Treatment options'}</h4>
+                        <div class="care-section-block note">
+                            <h4>${t.note || 'Note'}</h4>
                             <ul>
-                                ${care.treatment_options.map(a => `<li>${a}</li>`).join('')}
+                                ${notes.map(n => `<li>${n}</li>`).join('')}
                             </ul>
-                        </div>
-                    `;
-                }
-
-                if (care.consult_doctor) {
-                    html += `
-                        <div class="care-section-block doctor-advice">
-                            <h4>${t.consult_doctor || 'Consult a doctor'}</h4>
-                            <p>${care.consult_doctor}</p>
-                        </div>
-                    `;
-                }
-
-                if (care.safety_warnings && care.safety_warnings.length > 0) {
-                    html += `
-                        <div class="care-section-block safety-warnings">
-                            <h4>${t.safety_warnings || 'Safety warnings'}</h4>
-                            <ul>
-                                ${care.safety_warnings.map(a => `<li>${a}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-
-                if (care.prevention) {
-                    html += `
-                        <div class="care-section-block prevention">
-                            <h4>${t.prevention || 'Prevention'}</h4>
-                            <p>${care.prevention}</p>
-                        </div>
-                    `;
-                }
-
-                if (care.success_rate) {
-                    html += `
-                        <div class="care-section-block success-rate">
-                            <strong>${t.success_rate || 'Success rate'}</strong> ${care.success_rate}
                         </div>
                     `;
                 }
@@ -801,7 +839,7 @@ HTML_TEMPLATE = '''
         // EVENT LISTENERS
         // ============================================
         
-        // Language toggle - shows opposite language name
+        // Language toggle
         elements.langToggle.addEventListener('click', function() {
             const newLang = currentLang === 'en' ? 'ne' : 'en';
             translatePage(newLang);
