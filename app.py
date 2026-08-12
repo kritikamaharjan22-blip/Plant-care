@@ -481,6 +481,14 @@ HTML_TEMPLATE = '''
         let diseaseData = null;
 
         // ============================================
+        // CONVERT ENGLISH NUMBER TO NEPALI
+        // ============================================
+        function toNepaliNumber(num) {
+            const nepaliDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+            return num.toString().replace(/\d/g, d => nepaliDigits[parseInt(d)]);
+        }
+
+        // ============================================
         // DOM ELEMENTS
         // ============================================
         const el = {
@@ -549,9 +557,13 @@ HTML_TEMPLATE = '''
             
             console.log('🔄 Applying translations for:', lang);
             
-            // App title
-            if (el.appTitle) el.appTitle.textContent = t.app_title || 'Plant Care';
-            if (el.mainSubtitle) el.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
+            // App title - translate to Nepali when in Nepali mode
+            if (el.appTitle) {
+                el.appTitle.textContent = lang === 'en' ? 'Plant Care' : 'प्लान्ट केयर';
+            }
+            if (el.mainSubtitle) {
+                el.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
+            }
             
             // Plant info
             if (el.plantInfoText) el.plantInfoText.textContent = t.diagnosable_plants || 'Currently diagnosable plants:';
@@ -576,12 +588,12 @@ HTML_TEMPLATE = '''
             // Tutorial button - single emoji
             if (el.tutorialLabel) el.tutorialLabel.textContent = t.tutorial_btn || 'Tutorial';
             
-            // Translation button - swapping symbol
+            // Translation button - show language codes with swap symbol
             if (el.langLabel) {
-                el.langLabel.textContent = lang === 'en' ? '⇄ नेपाली' : '⇄ English';
+                el.langLabel.textContent = lang === 'en' ? 'EN ⇄ नेपाली' : 'NP ⇄ English';
             }
             if (el.langIcon) {
-                el.langIcon.textContent = lang === 'en' ? '🇳🇵' : '🇬🇧';
+                el.langIcon.textContent = lang === 'en' ? '🇬🇧' : '🇳🇵';
             }
             
             // Update result if exists
@@ -625,7 +637,17 @@ HTML_TEMPLATE = '''
             
             el.resultIcon.textContent = emoji;
             el.resultName.textContent = displayName;
-            el.resultConfidence.textContent = `${currentLang === 'en' ? 'Confidence' : 'विश्वसनीयता'}: ${data.confidence.toFixed(2)}%`;
+            
+            // Format confidence with Nepali numbers if in Nepali mode
+            let confidenceText = data.confidence.toFixed(2);
+            let confidenceLabel = currentLang === 'en' ? 'Confidence' : 'विश्वसनीयता';
+            if (currentLang === 'ne') {
+                confidenceText = toNepaliNumber(data.confidence.toFixed(2));
+                el.resultConfidence.textContent = `${confidenceLabel}: ${confidenceText}%`;
+            } else {
+                el.resultConfidence.textContent = `${confidenceLabel}: ${confidenceText}%`;
+            }
+            
             el.progressFill.style.width = `${data.confidence}%`;
             el.resultStatus.textContent = statusText;
             el.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
