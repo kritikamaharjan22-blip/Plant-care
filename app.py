@@ -1,4 +1,4 @@
-# app.py - COMPLETE UPDATED VERSION
+# app.py - COMPLETE FINAL VERSION
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -59,8 +59,30 @@ except:
         print("❌ Class names not found")
         exit()
 
+# Disease name translations
+DISEASE_TRANSLATIONS = {
+    'en': {
+        'Rice___Brown_Spot': 'Rice Brown Spot',
+        'Rice___Healthy': 'Rice Healthy',
+        'Rice___Leaf_Blast': 'Rice Leaf Blast',
+        'Rice___Neck_Blast': 'Rice Neck Blast',
+        'Potato___Early_Blight': 'Potato Early Blight',
+        'Potato___Healthy': 'Potato Healthy',
+        'Potato___Late_Blight': 'Potato Late Blight'
+    },
+    'ne': {
+        'Rice___Brown_Spot': 'धानको खैरो थोप्ले रोग',
+        'Rice___Healthy': 'स्वस्थ धान',
+        'Rice___Leaf_Blast': 'धानको पात मरुवा रोग',
+        'Rice___Neck_Blast': 'धानको बोट मरुवा रोग',
+        'Potato___Early_Blight': 'आलुको जल्द पाला रोग',
+        'Potato___Healthy': 'स्वस्थ आलु',
+        'Potato___Late_Blight': 'आलुको पछौटे डढुवा रोग'
+    }
+}
+
 # ============================================
-# HTML - COMPLETE UPDATED VERSION
+# HTML - COMPLETE FINAL VERSION
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -88,7 +110,7 @@ HTML_TEMPLATE = '''
             font-weight: 800;
             color: #1b5e20;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             letter-spacing: -1px;
             text-shadow: 0 4px 20px rgba(27, 94, 32, 0.15);
             position: relative;
@@ -161,8 +183,24 @@ HTML_TEMPLATE = '''
         .lang-toggle:hover { background: #c8e6c9; transform: scale(1.05); }
         .lang-toggle .lang-icon { font-size: 20px; }
 
-        .badges { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
-        .badge { padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .plant-info {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .plant-info .info-label {
+            color: #558b2f;
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        .badge { 
+            padding: 4px 16px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            display: inline-block;
+            margin: 0 4px;
+        }
         .badge-rice { background: #fef3c7; color: #92400e; }
         .badge-potato { background: #fde8e8; color: #9b2c2c; }
 
@@ -283,11 +321,11 @@ HTML_TEMPLATE = '''
         .care-section-block ul { padding-left: 20px; margin: 0; }
         .care-section-block ul li { margin-bottom: 4px; color: #333; font-size: 14px; line-height: 1.5; }
         .care-section-block p { margin: 0; color: #333; font-size: 14px; line-height: 1.5; }
-        .care-section-block.note { border-left-color: #ff9800; background: #fff3e0; }
+        .care-section-block.notice { border-left-color: #ff9800; background: #fff3e0; }
 
         .footer { text-align: center; margin-top: 18px; color: #a5d6a7; font-size: 12px; }
 
-        /* Tutorial Modal - Video Popup */
+        /* Tutorial Modal */
         .tutorial-modal {
             display: none;
             position: fixed;
@@ -326,21 +364,6 @@ HTML_TEMPLATE = '''
             justify-content: center;
         }
         .tutorial-modal-content .close-btn:hover { background: #d32f2f; }
-        .tutorial-modal-content .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-        }
-        .tutorial-modal-content .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 10px;
-        }
         .tutorial-modal-content .dummy-video {
             width: 100%;
             height: 400px;
@@ -373,7 +396,7 @@ HTML_TEMPLATE = '''
 <body>
     <!-- MAIN TITLE -->
     <div class="main-title">
-        <span class="leaf">🌿</span> <span id="appTitle">PLANT CARE</span>
+        <span class="leaf">🌿</span> <span id="appTitle">Plant Care</span> <span class="leaf">🌿</span>
         <span class="sub" id="mainSubtitle">Smart Disease Detection for Your Plants</span>
     </div>
 
@@ -381,14 +404,12 @@ HTML_TEMPLATE = '''
     <div class="tutorial-modal" id="tutorialModal">
         <div class="tutorial-modal-content">
             <button class="close-btn" id="tutorialCloseBtn">✕</button>
-            <div id="tutorialVideoContainer">
-                <!-- Dummy video/placeholder - will be replaced by JS -->
-            </div>
+            <div id="tutorialVideoContainer"></div>
         </div>
     </div>
 
     <!-- MAIN CONTAINER -->
-    <div class="container" id="mainContainer">
+    <div class="container">
         <div class="header">
             <button class="btn-sm btn-tutorial" id="tutorialBtn">
                 <span class="emoji">🎓</span> <span id="tutorialLabel">Tutorial</span>
@@ -399,25 +420,21 @@ HTML_TEMPLATE = '''
             </button>
         </div>
 
-        <div class="badges">
-            <span class="badge badge-rice">🌾 Rice</span>
-            <span class="badge badge-potato">🥔 Potato</span>
+        <div class="plant-info">
+            <span class="info-label" id="plantInfoText">Currently diagnosable plants:</span>
+            <span class="badge badge-rice" id="riceBadge">🌾 Rice</span>
+            <span class="badge badge-potato" id="potatoBadge">🥔 Potato</span>
         </div>
 
-        <!-- Upload Area -->
         <div class="upload-area" id="dropZone">
             <div class="upload-icon" id="uploadIcon">📸</div>
             <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
             <p class="hint" id="hintText">Drag &amp; drop or click to browse</p>
             <label class="btn-upload" for="fileInput" id="browseBtn">📁 Choose Image</label>
             <input type="file" id="fileInput" accept="image/*">
-            
-            <!-- Image preview container -->
             <div class="image-container">
                 <img id="preview" alt="Preview">
             </div>
-            
-            <!-- Choose Another Image button (hidden by default) -->
             <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">📁 Choose Another Image</label>
         </div>
 
@@ -436,7 +453,6 @@ HTML_TEMPLATE = '''
             <div class="result-confidence" id="resultConfidence">Confidence: 95.0%</div>
             <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 95%"></div></div>
             <div class="result-status" id="resultStatus">🌿 Your plant appears healthy!</div>
-
             <div class="care-section" id="careSection">
                 <div class="care-title" id="careTitle">📋 Post Care Guidance <span class="translation-badge" id="langBadge">EN</span></div>
                 <div id="careSteps"></div>
@@ -448,31 +464,14 @@ HTML_TEMPLATE = '''
 
     <script>
         // ============================================
-        // UI TRANSLATIONS - Convert flat to nested if needed
+        // UI TRANSLATIONS FROM BACKEND
         // ============================================
-        const rawUI_TEXT = {{ ui_text | tojson | default('{}') }};
+        const UI_TEXT = {{ ui_text | tojson | default('{}') }};
         const TUTORIAL_STEPS = {{ tutorial_steps | tojson | default('[]') }};
+        const DISEASE_TRANSLATIONS = {{ disease_translations | tojson | default('{}') }};
 
-        // Build UI_TEXT with proper nested structure
-        let UI_TEXT = {};
-
-        // Check if rawUI_TEXT is already nested
-        if (rawUI_TEXT.en && typeof rawUI_TEXT.en === 'object' && rawUI_TEXT.en.app_subtitle) {
-            UI_TEXT = rawUI_TEXT;
-        } else {
-            // Flat format - wrap it
-            UI_TEXT = {
-                'en': rawUI_TEXT,
-                'ne': rawUI_TEXT
-            };
-            // If we have both translations, use them
-            if (rawUI_TEXT.ne && typeof rawUI_TEXT.ne === 'object') {
-                UI_TEXT.ne = rawUI_TEXT.ne;
-            }
-        }
-
-        console.log('🔍 UI_TEXT loaded:', Object.keys(UI_TEXT));
-        console.log('🔍 TUTORIAL_STEPS loaded:', TUTORIAL_STEPS.length);
+        console.log('🔍 UI_TEXT loaded:', UI_TEXT);
+        console.log('🔍 DISEASE_TRANSLATIONS loaded:', DISEASE_TRANSLATIONS);
 
         // ============================================
         // STATE
@@ -480,16 +479,16 @@ HTML_TEMPLATE = '''
         let currentLang = 'en';
         let selectedFile = null;
         let diseaseData = null;
-        let isSpeaking = false;
-        let speechSynth = window.speechSynthesis;
-        let hasImage = false;
 
         // ============================================
-        // DOM REFERENCES
+        // DOM ELEMENTS
         // ============================================
-        const elements = {
+        const el = {
             appTitle: document.getElementById('appTitle'),
             mainSubtitle: document.getElementById('mainSubtitle'),
+            plantInfoText: document.getElementById('plantInfoText'),
+            riceBadge: document.getElementById('riceBadge'),
+            potatoBadge: document.getElementById('potatoBadge'),
             uploadText: document.getElementById('uploadText'),
             uploadIcon: document.getElementById('uploadIcon'),
             hintText: document.getElementById('hintText'),
@@ -523,76 +522,188 @@ HTML_TEMPLATE = '''
         };
 
         // ============================================
-        // TRANSLATION FUNCTION - FULL PAGE TRANSLATION
+        // TRANSLATION FUNCTION
         // ============================================
         function translatePage(lang) {
-            // Get translations for the requested language
-            let t = UI_TEXT[lang] || UI_TEXT['en'];
+            // Fetch the right translations from backend
+            fetch(`/api/get_ui_text?lang=${lang}`)
+                .then(res => res.json())
+                .then(uiText => {
+                    // Update UI_TEXT with new translations
+                    Object.assign(UI_TEXT, uiText);
+                    applyTranslations(lang);
+                })
+                .catch(() => {
+                    // Fallback: use existing UI_TEXT
+                    applyTranslations(lang);
+                });
+        }
+
+        function applyTranslations(lang) {
+            const t = UI_TEXT;
             
             if (!t || typeof t !== 'object') {
-                console.error('❌ Translations not available for:', lang);
-                t = UI_TEXT['en'] || {};
+                console.error('❌ UI_TEXT not available');
+                return;
             }
             
-            // Update app title
-            if (elements.appTitle) {
-                elements.appTitle.textContent = t.app_title || 'PLANT CARE';
+            console.log('🔄 Applying translations for:', lang);
+            
+            // App title
+            if (el.appTitle) el.appTitle.textContent = t.app_title || 'Plant Care';
+            if (el.mainSubtitle) el.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
+            
+            // Plant info
+            if (el.plantInfoText) el.plantInfoText.textContent = t.diagnosable_plants || 'Currently diagnosable plants:';
+            
+            // Badges - Rice and Potato translations
+            if (el.riceBadge) {
+                el.riceBadge.textContent = lang === 'en' ? '🌾 Rice' : '🌾 चामल';
+            }
+            if (el.potatoBadge) {
+                el.potatoBadge.textContent = lang === 'en' ? '🥔 Potato' : '🥔 आलु';
             }
             
-            // Update main title subtitle
-            if (elements.mainSubtitle) {
-                elements.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
+            // Upload area
+            if (el.uploadText) el.uploadText.textContent = t.upload_title || 'Upload a leaf image';
+            if (el.hintText) el.hintText.textContent = t.upload_hint || 'Drag & drop or click to browse';
+            if (el.browseBtn) el.browseBtn.textContent = t.browse_btn || '📁 Choose Image';
+            if (el.chooseAnotherBtn) el.chooseAnotherBtn.textContent = t.choose_another_btn || '📁 Choose Another Image';
+            if (el.predictBtn) el.predictBtn.textContent = t.analyze_btn || '🔍 Analyze Plant';
+            if (el.loadingText) el.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
+            if (el.footerText) el.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
+            
+            // Tutorial button - single emoji
+            if (el.tutorialLabel) el.tutorialLabel.textContent = t.tutorial_btn || 'Tutorial';
+            
+            // Translation button - swapping symbol
+            if (el.langLabel) {
+                el.langLabel.textContent = lang === 'en' ? '⇄ नेपाली' : '⇄ English';
+            }
+            if (el.langIcon) {
+                el.langIcon.textContent = lang === 'en' ? '🇳🇵' : '🇬🇧';
             }
             
-            // Update upload area - ALL TEXT
-            if (elements.uploadText) elements.uploadText.textContent = t.upload_title || 'Upload a leaf image';
-            if (elements.hintText) elements.hintText.textContent = t.upload_hint || 'Drag & drop or click to browse';
-            if (elements.browseBtn) elements.browseBtn.textContent = t.browse_btn || '📁 Choose Image';
-            if (elements.chooseAnotherBtn) elements.chooseAnotherBtn.textContent = t.choose_another_btn || '📁 Choose Another Image';
-            if (elements.predictBtn) elements.predictBtn.textContent = t.analyze_btn || '🔍 Analyze Plant';
-            if (elements.loadingText) elements.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
-            if (elements.footerText) elements.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
-            
-            // Update tutorial button
-            if (elements.tutorialLabel) elements.tutorialLabel.textContent = t.tutorial_btn || '🎓 Tutorial';
-            
-            // Update language toggle - show OPPOSITE language name
-            if (elements.langLabel) {
-                elements.langLabel.textContent = lang === 'en' ? 'नेपाली' : 'English';
-            }
-            if (elements.langIcon) {
-                elements.langIcon.textContent = lang === 'en' ? '🇳🇵' : '🇬🇧';
-            }
-            
-            // Update result status if exists
+            // Update result if exists
             if (diseaseData) {
                 displayResult(diseaseData);
             }
             
-            // Update care section title
-            updateCareSectionTitle();
+            // Update care title
+            if (el.careTitle) {
+                const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
+                const badge = lang === 'en' ? 'EN' : 'ने';
+                el.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+            }
+            if (el.langBadge) {
+                el.langBadge.textContent = lang === 'en' ? 'EN' : 'ने';
+            }
             
             currentLang = lang;
         }
 
-        function updateCareSectionTitle() {
-            if (elements.careTitle) {
-                const titleText = currentLang === 'en' ? '📋 Post Care Guidance' : '📋 पोस्ट केयर गाइडेन्स';
+        // ============================================
+        // DISPLAY RESULT
+        // ============================================
+        function displayResult(data) {
+            const isHealthy = data.class.includes('Healthy');
+            const t = UI_TEXT;
+            
+            // Get translated disease name
+            let displayName = data.class;
+            if (DISEASE_TRANSLATIONS[currentLang] && DISEASE_TRANSLATIONS[currentLang][data.class]) {
+                displayName = DISEASE_TRANSLATIONS[currentLang][data.class];
+            } else {
+                // Replace underscores with spaces as fallback
+                displayName = data.class.replace(/_/g, ' ');
+            }
+            
+            el.resultDiv.className = isHealthy ? 'healthy' : 'disease';
+            
+            let emoji = isHealthy ? '✅' : '⚠️';
+            let statusText = isHealthy ? (t.resultHealthy || '🌿 Your plant appears healthy!') : (t.resultDisease || '⚠️ Disease detected!');
+            
+            el.resultIcon.textContent = emoji;
+            el.resultName.textContent = displayName;
+            el.resultConfidence.textContent = `${currentLang === 'en' ? 'Confidence' : 'विश्वसनीयता'}: ${data.confidence.toFixed(2)}%`;
+            el.progressFill.style.width = `${data.confidence}%`;
+            el.resultStatus.textContent = statusText;
+            el.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
+            
+            if (data.care) {
+                el.careSection.classList.add('visible');
+                
+                // Update care title
+                const titleText = currentLang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
                 const badge = currentLang === 'en' ? 'EN' : 'ने';
-                elements.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+                el.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+                
+                let html = '';
+                
+                if (data.care.immediate_actions && data.care.immediate_actions.length > 0) {
+                    html += `
+                        <div class="care-section-block">
+                            <h4>${t.what_to_do || 'What to do now'}</h4>
+                            <ul>
+                                ${data.care.immediate_actions.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (data.care.treatment_options && data.care.treatment_options.length > 0) {
+                    html += `
+                        <div class="care-section-block">
+                            <h4>${t.treatment_options || 'Treatment options'}</h4>
+                            <ul>
+                                ${data.care.treatment_options.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (data.care.prevention) {
+                    html += `
+                        <div class="care-section-block">
+                            <h4>${t.prevention || 'Prevention'}</h4>
+                            <p>${data.care.prevention}</p>
+                        </div>
+                    `;
+                }
+                
+                if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
+                    html += `
+                        <div class="care-section-block">
+                            <h4>${t.safety_warnings || 'Safety warnings'}</h4>
+                            <ul>
+                                ${data.care.safety_warnings.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                if (data.care.notice) {
+                    html += `
+                        <div class="care-section-block notice">
+                            <h4>${t.notice || 'Notice'}</h4>
+                            <p>${data.care.notice}</p>
+                        </div>
+                    `;
+                }
+                
+                el.careSteps.innerHTML = html;
+            } else {
+                el.careSection.classList.remove('visible');
             }
-            if (elements.langBadge) {
-                elements.langBadge.textContent = currentLang === 'en' ? 'EN' : 'ने';
-            }
+            
+            el.resultDiv.style.display = 'block';
         }
 
         // ============================================
-        // TUTORIAL - Video Popup
+        // TUTORIAL
         // ============================================
         function showTutorial() {
-            const modal = elements.tutorialModal;
-            const container = elements.tutorialVideoContainer;
-            
+            const container = el.tutorialVideoContainer;
             if (currentLang === 'en') {
                 container.innerHTML = `
                     <div class="dummy-video">
@@ -622,66 +733,61 @@ HTML_TEMPLATE = '''
                     </div>
                 `;
             }
-            
-            modal.classList.add('show');
+            el.tutorialModal.classList.add('show');
         }
 
         function closeTutorial() {
-            elements.tutorialModal.classList.remove('show');
+            el.tutorialModal.classList.remove('show');
         }
 
         // ============================================
-        // FILE UPLOAD - UPDATED
+        // FILE UPLOAD
         // ============================================
-        elements.fileInput.addEventListener('change', function() {
+        el.fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 selectedFile = this.files[0];
-                hasImage = true;
-                elements.predictBtn.disabled = false;
-                elements.resultDiv.style.display = 'none';
-                elements.careSection.classList.remove('visible');
+                el.predictBtn.disabled = false;
+                el.resultDiv.style.display = 'none';
+                el.careSection.classList.remove('visible');
                 diseaseData = null;
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    elements.preview.src = e.target.result;
-                    elements.preview.classList.add('show');
-                    // Hide upload icon and text, show the image
-                    elements.uploadIcon.style.display = 'none';
-                    elements.uploadText.style.display = 'none';
-                    elements.hintText.style.display = 'none';
-                    elements.browseBtn.style.display = 'none';
-                    // Show "Choose Another Image" button
-                    elements.chooseAnotherBtn.style.display = 'inline-block';
-                    elements.dropZone.classList.add('has-image');
+                    el.preview.src = e.target.result;
+                    el.preview.classList.add('show');
+                    el.uploadIcon.style.display = 'none';
+                    el.uploadText.style.display = 'none';
+                    el.hintText.style.display = 'none';
+                    el.browseBtn.style.display = 'none';
+                    el.chooseAnotherBtn.style.display = 'inline-block';
+                    el.dropZone.classList.add('has-image');
                 };
                 reader.readAsDataURL(selectedFile);
             }
         });
 
-        elements.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); elements.dropZone.classList.add('dragover'); });
-        elements.dropZone.addEventListener('dragleave', () => elements.dropZone.classList.remove('dragover'));
-        elements.dropZone.addEventListener('drop', function(e) {
+        el.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); el.dropZone.classList.add('dragover'); });
+        el.dropZone.addEventListener('dragleave', () => el.dropZone.classList.remove('dragover'));
+        el.dropZone.addEventListener('drop', function(e) {
             e.preventDefault();
             this.classList.remove('dragover');
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                 selectedFile = e.dataTransfer.files[0];
-                hasImage = true;
-                elements.predictBtn.disabled = false;
-                elements.resultDiv.style.display = 'none';
-                elements.careSection.classList.remove('visible');
+                el.predictBtn.disabled = false;
+                el.resultDiv.style.display = 'none';
+                el.careSection.classList.remove('visible');
                 diseaseData = null;
-                elements.fileInput.files = e.dataTransfer.files;
+                el.fileInput.files = e.dataTransfer.files;
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    elements.preview.src = e.target.result;
-                    elements.preview.classList.add('show');
-                    elements.uploadIcon.style.display = 'none';
-                    elements.uploadText.style.display = 'none';
-                    elements.hintText.style.display = 'none';
-                    elements.browseBtn.style.display = 'none';
-                    elements.chooseAnotherBtn.style.display = 'inline-block';
-                    elements.dropZone.classList.add('has-image');
+                    el.preview.src = e.target.result;
+                    el.preview.classList.add('show');
+                    el.uploadIcon.style.display = 'none';
+                    el.uploadText.style.display = 'none';
+                    el.hintText.style.display = 'none';
+                    el.browseBtn.style.display = 'none';
+                    el.chooseAnotherBtn.style.display = 'inline-block';
+                    el.dropZone.classList.add('has-image');
                 };
                 reader.readAsDataURL(selectedFile);
             }
@@ -690,165 +796,60 @@ HTML_TEMPLATE = '''
         // ============================================
         // PREDICT
         // ============================================
-        elements.predictBtn.addEventListener('click', async function() {
+        el.predictBtn.addEventListener('click', async function() {
             if (!selectedFile) return;
-
+            
             const formData = new FormData();
             formData.append('file', selectedFile);
-
+            
             this.disabled = true;
-            elements.loadingDiv.style.display = 'block';
-            elements.resultDiv.style.display = 'none';
-            elements.careSection.classList.remove('visible');
-
+            el.loadingDiv.style.display = 'block';
+            el.resultDiv.style.display = 'none';
+            el.careSection.classList.remove('visible');
+            
             try {
-                console.log('📤 Sending prediction request...');
-                const response = await fetch('/api/predict', { 
-                    method: 'POST', 
-                    body: formData 
-                });
-                
-                console.log('📥 Response status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+                const response = await fetch('/api/predict', { method: 'POST', body: formData });
                 const data = await response.json();
-                console.log('📦 Response data:', data);
-
-                elements.loadingDiv.style.display = 'none';
-
+                el.loadingDiv.style.display = 'none';
+                
                 if (data.success) {
                     diseaseData = data;
-                    await fetchAndDisplayResults(data.class, data.confidence);
+                    const careResponse = await fetch(`/api/care/${encodeURIComponent(data.class)}?lang=${currentLang}`);
+                    const careData = await careResponse.json();
+                    if (careData.success) {
+                        diseaseData.care = careData.care;
+                    }
+                    displayResult(diseaseData);
                 } else {
-                    elements.resultDiv.style.display = 'block';
-                    elements.resultDiv.className = 'disease';
-                    elements.resultIcon.textContent = '❌';
-                    elements.resultName.textContent = 'Error';
-                    elements.resultStatus.textContent = data.error || 'Unknown error';
+                    el.resultDiv.style.display = 'block';
+                    el.resultDiv.className = 'disease';
+                    el.resultIcon.textContent = '❌';
+                    el.resultName.textContent = 'Error';
+                    el.resultStatus.textContent = data.error || 'Unknown error';
                 }
             } catch (error) {
-                console.error('❌ Error:', error);
-                elements.loadingDiv.style.display = 'none';
-                elements.resultDiv.style.display = 'block';
-                elements.resultDiv.className = 'disease';
-                elements.resultIcon.textContent = '❌';
-                elements.resultName.textContent = 'Connection Error';
-                elements.resultStatus.textContent = error.message || 'Failed to connect to server';
+                el.loadingDiv.style.display = 'none';
+                el.resultDiv.style.display = 'block';
+                el.resultDiv.className = 'disease';
+                el.resultIcon.textContent = '❌';
+                el.resultName.textContent = 'Connection Error';
+                el.resultStatus.textContent = error.message;
             }
-
+            
             this.disabled = false;
         });
-
-        async function fetchAndDisplayResults(className, confidence) {
-            const lang = currentLang;
-            const response = await fetch(`/api/care/${encodeURIComponent(className)}?lang=${lang}`);
-            const data = await response.json();
-
-            if (data.success) {
-                diseaseData = { class: className, confidence: confidence, care: data.care };
-                displayResult(diseaseData);
-            } else {
-                displayResult({ class: className, confidence: confidence, care: null });
-            }
-        }
-
-        // ============================================
-        // DISPLAY RESULT - UPDATED with simplified care
-        // ============================================
-        function displayResult(data) {
-            const isHealthy = data.class.includes('Healthy');
-            const lang = currentLang;
-            
-            // Get translations for current language
-            let t = UI_TEXT[lang] || UI_TEXT['en'];
-            if (!t || typeof t !== 'object') {
-                t = UI_TEXT['en'] || {};
-            }
-
-            elements.resultDiv.className = isHealthy ? 'healthy' : 'disease';
-
-            let emoji = isHealthy ? '✅' : '⚠️';
-            let statusText = isHealthy ? (t.resultHealthy || '🌿 Your plant appears healthy!') : (t.resultDisease || '⚠️ Disease detected!');
-
-            elements.resultIcon.textContent = emoji;
-            elements.resultName.textContent = data.class;
-            elements.resultConfidence.textContent = `${lang === 'en' ? 'Confidence' : 'विश्वसनीयता'}: ${data.confidence.toFixed(2)}%`;
-            elements.progressFill.style.width = `${data.confidence}%`;
-            elements.resultStatus.textContent = statusText;
-            elements.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
-
-            // Simplified Care Section - Only "What to do now" and "Note"
-            if (data.care) {
-                elements.careSection.classList.add('visible');
-                updateCareSectionTitle();
-
-                let html = '';
-
-                // What to do now - immediate actions and treatment options combined
-                const actions = [];
-                if (data.care.immediate_actions && data.care.immediate_actions.length > 0) {
-                    actions.push(...data.care.immediate_actions);
-                }
-                if (data.care.treatment_options && data.care.treatment_options.length > 0) {
-                    actions.push(...data.care.treatment_options);
-                }
-
-                if (actions.length > 0) {
-                    html += `
-                        <div class="care-section-block">
-                            <h4>${t.what_to_do || 'What to do now'}</h4>
-                            <ul>
-                                ${actions.map(a => `<li>${a}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-
-                // Note - combines consult_doctor, safety_warnings, prevention, success_rate
-                const notes = [];
-                if (data.care.consult_doctor) notes.push(data.care.consult_doctor);
-                if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
-                    notes.push(...data.care.safety_warnings);
-                }
-                if (data.care.prevention) notes.push(data.care.prevention);
-                if (data.care.success_rate) notes.push(data.care.success_rate);
-
-                if (notes.length > 0) {
-                    html += `
-                        <div class="care-section-block note">
-                            <h4>${t.note || 'Note'}</h4>
-                            <ul>
-                                ${notes.map(n => `<li>${n}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-
-                elements.careSteps.innerHTML = html;
-            } else {
-                elements.careSection.classList.remove('visible');
-            }
-
-            elements.resultDiv.style.display = 'block';
-        }
 
         // ============================================
         // EVENT LISTENERS
         // ============================================
-        
-        // Language toggle
-        elements.langToggle.addEventListener('click', function() {
+        el.langToggle.addEventListener('click', function() {
             const newLang = currentLang === 'en' ? 'ne' : 'en';
             translatePage(newLang);
         });
 
-        // Tutorial button
-        elements.tutorialBtn.addEventListener('click', showTutorial);
-        elements.tutorialCloseBtn.addEventListener('click', closeTutorial);
-        elements.tutorialModal.addEventListener('click', function(e) {
+        el.tutorialBtn.addEventListener('click', showTutorial);
+        el.tutorialCloseBtn.addEventListener('click', closeTutorial);
+        el.tutorialModal.addEventListener('click', function(e) {
             if (e.target === this) closeTutorial();
         });
 
@@ -857,11 +858,6 @@ HTML_TEMPLATE = '''
         // ============================================
         window.addEventListener('load', function() {
             translatePage('en');
-            
-            // Preload speech voices
-            if (speechSynth) {
-                speechSynth.getVoices();
-            }
         });
     </script>
 </body>
@@ -869,32 +865,31 @@ HTML_TEMPLATE = '''
 '''
 
 # ============================================
-# FLASK ROUTES
+# API ROUTES
 # ============================================
 
 @app.route('/')
 def index():
     """Serve the main page with all translations"""
-    from translation import get_ui_text, get_tutorial_steps
-    
-    # Get translations
     ui_text = get_ui_text('en')
     tutorial_steps = get_tutorial_steps('en')
-    
-    # Debug: Check if data exists
-    print(f"📝 UI Text keys: {list(ui_text.keys()) if ui_text else 'None'}")
-    print(f"📝 Tutorial steps: {len(tutorial_steps) if tutorial_steps else 0}")
-    
     return render_template_string(
         HTML_TEMPLATE,
         ui_text=ui_text,
         tutorial_steps=tutorial_steps,
-        current_lang='en'
+        current_lang='en',
+        disease_translations=DISEASE_TRANSLATIONS
     )
+
+@app.route('/api/get_ui_text')
+def get_ui_text_api():
+    """Get UI translations for a specific language"""
+    lang = request.args.get('lang', 'en')
+    ui_text = get_ui_text(lang)
+    return jsonify(ui_text)
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
-    """Predict disease from uploaded image"""
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file uploaded'}), 400
@@ -920,7 +915,7 @@ def predict():
         os.remove(filepath)
         cleanup_variables(img, img_array, predictions)
 
-        lang = session.get('language', 'en')
+        lang = request.args.get('lang', 'en')
         care = get_care(predicted_class, lang)
 
         return jsonify({
@@ -940,7 +935,6 @@ def predict():
 
 @app.route('/api/care/<path:disease>', methods=['GET'])
 def get_care_api(disease):
-    """Get care instructions for a disease"""
     lang = request.args.get('lang', 'en')
     care = get_care(disease, lang)
     return jsonify({
@@ -956,7 +950,6 @@ def health():
         'app': 'Plant Care',
         'model_loaded': model is not None,
         'classes': len(class_names),
-        'language': session.get('language', 'en'),
         'memory_mb': print_memory()
     })
 
@@ -969,7 +962,7 @@ def cleanup(error):
 # ============================================
 if __name__ == '__main__':
     print("\n" + "=" * 50)
-    print("🌿 PLANT CARE - COMPLETE APP")
+    print("🌿 PLANT CARE - COMPLETE FINAL VERSION")
     print("=" * 50)
     print(f"📊 Detects: {len(class_names)} plant conditions")
     print(f"🗣️  Languages: English + Nepali (FULL TRANSLATION)")

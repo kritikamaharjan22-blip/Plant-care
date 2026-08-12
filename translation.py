@@ -7,7 +7,7 @@ import random
 UI_TRANSLATIONS = {
     'en': {
         # App
-        'app_title': '🌿 Plant Care',
+        'app_title': 'Plant Care',
         'app_subtitle': 'Smart Disease Detection for Your Plants',
         
         # Header
@@ -36,11 +36,12 @@ UI_TRANSLATIONS = {
         # Care Sections
         'what_to_do': 'What to do now',
         'treatment_options': 'Treatment options',
-        'consult_doctor': 'When to Consult a Doctor',
-        'safety_warnings': 'Important Safety Warnings',
         'prevention': 'Prevention',
-        'success_rate': 'Success rate',
-        'note': 'Note',
+        'safety_warnings': 'Safety warnings',
+        'notice': 'Notice',
+        
+        # Plant info
+        'diagnosable_plants': 'Currently diagnosable plants:',
         
         # Footer
         'footer': '🌱 Keep your plants healthy with Plant Care',
@@ -55,12 +56,10 @@ UI_TRANSLATIONS = {
         'no_disease_alert': 'Please diagnose a plant first!',
         'error_title': 'Error',
         'connection_error': 'Connection Error',
-        
-        # Tutorial Steps (will be in separate dict)
     },
     'ne': {
         # App
-        'app_title': '🌿 प्लान्ट केयर',
+        'app_title': 'Plant Care',
         'app_subtitle': 'तपाईंको बिरुवाहरूको लागि स्मार्ट रोग पत्ता लगाउने',
         
         # Header
@@ -84,16 +83,17 @@ UI_TRANSLATIONS = {
         'confidence': 'विश्वसनीयता',
         'resultHealthy': '🌿 तपाईंको बिरुवा स्वस्थ देखिन्छ!',
         'resultDisease': '⚠️ रोग पत्ता लाग्यो!',
-        'care_title': '📋 पोस्ट केयर गाइडेन्स',
+        'care_title': '📋 पश्चात् सेवा मार्गदर्शन',
         
         # Care Sections
         'what_to_do': 'अब के गर्ने',
         'treatment_options': 'उपचार विकल्पहरू',
-        'consult_doctor': 'डाक्टरलाई कहिले सोध्ने',
-        'safety_warnings': 'महत्वपूर्ण सुरक्षा चेतावनी',
         'prevention': 'रोकथाम',
-        'success_rate': 'सफलता दर',
-        'note': 'नोट',
+        'safety_warnings': 'सुरक्षा चेतावनीहरू',
+        'notice': 'सूचना',
+        
+        # Plant info
+        'diagnosable_plants': 'हाल निदान गर्न सकिने बिरुवाहरू:',
         
         # Footer
         'footer': '🌱 प्लान्ट केयरसँग आफ्नो बिरुवाहरू स्वस्थ राख्नुहोस्',
@@ -119,20 +119,20 @@ TUTORIAL_TRANSLATIONS = {
         {
             "id": "welcome",
             "title": "👋 Welcome to Plant Care!",
-            "desc": "First, click the Translation button to switch between English and Nepali.",
-            "instruction": "👉 Click the Translation button"
+            "desc": "Click the Translation button to switch between English and Nepali.",
+            "instruction": "👉 Click the Translation button to continue"
         },
         {
             "id": "upload",
             "title": "📸 Upload a Leaf Photo",
-            "desc": "This is the Upload Area. Click here or drag and drop a leaf photo.",
-            "instruction": "👉 Click here or press OK"
+            "desc": "Click here or drag and drop a photo of a leaf from your plant.",
+            "instruction": "👉 Click here or press OK to continue"
         },
         {
             "id": "diagnose",
             "title": "🔍 Diagnose Your Plant",
-            "desc": "After uploading a photo, click this button to detect diseases.",
-            "instruction": "👉 Click Analyze or press OK"
+            "desc": "After uploading a photo, click here to detect diseases.",
+            "instruction": "👉 Click the Analyze button or press OK"
         },
         {
             "id": "results",
@@ -143,28 +143,28 @@ TUTORIAL_TRANSLATIONS = {
         {
             "id": "features",
             "title": "🔊 Extra Features",
-            "desc": "Use Read Out Loud to hear instructions. The Tutorial button replays this guide.",
-            "instruction": "👉 Press OK to finish"
+            "desc": "Use Read Out Loud to hear instructions. Tutorial replays this guide anytime.",
+            "instruction": "👉 Press OK to finish the tutorial"
         }
     ],
     'ne': [
         {
             "id": "welcome",
             "title": "👋 प्लान्ट केयरमा स्वागत छ!",
-            "desc": "पहिले, अनुवाद बटनमा क्लिक गर्नुहोस् अंग्रेजी र नेपाली बीच स्विच गर्न।",
-            "instruction": "👉 अनुवाद बटन क्लिक गर्नुहोस्"
+            "desc": "अंग्रेजी र नेपाली बीच स्विच गर्न अनुवाद बटन क्लिक गर्नुहोस्।",
+            "instruction": "👉 जारी राख्न अनुवाद बटन क्लिक गर्नुहोस्"
         },
         {
             "id": "upload",
             "title": "📸 पातको फोटो अपलोड गर्नुहोस्",
-            "desc": "यो अपलोड क्षेत्र हो। यहाँ क्लिक गर्नुहोस् वा पातको फोटो तान्नुहोस्।",
-            "instruction": "👉 यहाँ क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
+            "desc": "यहाँ क्लिक गर्नुहोस् वा तपाईंको बिरुवाको पातको फोटो तान्नुहोस्।",
+            "instruction": "👉 जारी राख्न यहाँ क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
         },
         {
             "id": "diagnose",
             "title": "🔍 आफ्नो बिरुवा निदान गर्नुहोस्",
-            "desc": "फोटो अपलोड गरेपछि, रोग पत्ता लगाउन यो बटन क्लिक गर्नुहोस्।",
-            "instruction": "👉 विश्लेषण क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
+            "desc": "फोटो अपलोड गरेपछि, रोग पत्ता लगाउन यहाँ क्लिक गर्नुहोस्।",
+            "instruction": "👉 विश्लेषण बटन क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
         },
         {
             "id": "results",
@@ -175,8 +175,8 @@ TUTORIAL_TRANSLATIONS = {
         {
             "id": "features",
             "title": "🔊 अतिरिक्त सुविधाहरू",
-            "desc": "पढेर सुनाउनुहोस् प्रयोग गर्नुहोस् निर्देशनहरू सुन्न। ट्यूटोरियल बटनले यो गाइड पुन: चलाउछ।",
-            "instruction": "👉 समाप्त गर्न OK थिच्नुहोस्"
+            "desc": "निर्देशनहरू सुन्न पढेर सुनाउनुहोस् प्रयोग गर्नुहोस्। ट्यूटोरियलले यो गाइड पुन: चलाउँछ।",
+            "instruction": "👉 ट्यूटोरियल समाप्त गर्न OK थिच्नुहोस्"
         }
     ]
 }
@@ -199,14 +199,13 @@ CARE_DATA = {
                 "🧪 Use Trichoderma bio-fungicide as preventive measure",
                 "🌾 Apply potassium-rich fertilizer to boost resistance"
             ],
-            "consult_doctor": "⚠️ If leaves develop large dark spots (>1cm) or spread rapidly, consult an agricultural officer immediately",
+            "prevention": "🛡️ Use resistant varieties and maintain proper drainage",
             "safety_warnings": [
                 "⚠️ DO NOT water in the evening (increases fungal growth)",
                 "⚠️ DO NOT use same fungicide repeatedly (can cause resistance)",
                 "⚠️ Wear protective gear when applying chemicals"
             ],
-            "prevention": "🛡️ Use resistant varieties and maintain proper drainage",
-            "success_rate": "85% if treated early"
+            "notice": "📢 If leaves develop large dark spots (>1cm) or spread rapidly, consult an agricultural officer immediately"
         },
         "ne": {
             "title": "🌾 खैरो धब्बा उपचार गाइड",
@@ -221,14 +220,13 @@ CARE_DATA = {
                 "🧪 ट्राइकोडर्मा जैविक फंगिसाइड रोकथामको लागि प्रयोग गर्नुहोस्",
                 "🌾 पोटासियम युक्त मल प्रतिरोध बढाउन प्रयोग गर्नुहोस्"
             ],
-            "consult_doctor": "⚠️ यदि पातहरूमा ठूला कालो धब्बा (>१ सेमी) देखिन्छ वा छिटो फैलिन्छ भने तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्",
+            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू प्रयोग गर्नुहोस् र राम्रो जल निकासी कायम राख्नुहोस्",
             "safety_warnings": [
                 "⚠️ साँझमा पानी नहाल्नुहोस् (फंगस बढ्न सक्छ)",
                 "⚠️ एउटै फंगिसाइड बारम्बार प्रयोग नगर्नुहोस् (प्रतिरोध हुन सक्छ)",
                 "⚠️ रसायन लगाउँदा सुरक्षा गियर लगाउनुहोस्"
             ],
-            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू प्रयोग गर्नुहोस् र राम्रो जल निकासी कायम राख्नुहोस्",
-            "success_rate": "प्रारम्भिक उपचारमा ८५% सफलता"
+            "notice": "📢 यदि पातहरूमा ठूला कालो धब्बा (>१ सेमी) देखिन्छ वा छिटो फैलिन्छ भने तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्"
         }
     },
     "Rice - Leaf Blast": {
@@ -245,14 +243,13 @@ CARE_DATA = {
                 "🧪 Use Pseudomonas fluorescens bio-control",
                 "🌾 Apply potassium silicate for resistance"
             ],
-            "consult_doctor": "🚨 URGENT: If >30% of leaves are infected, stop using nitrogen fertilizer and consult agricultural officer immediately",
+            "prevention": "🛡️ Use resistant varieties, proper spacing, and balanced fertilization",
             "safety_warnings": [
                 "⚠️ DO NOT apply excess nitrogen fertilizer",
                 "⚠️ DO NOT overcrowd plants",
                 "⚠️ DO NOT use infected seeds"
             ],
-            "prevention": "🛡️ Use resistant varieties, proper spacing, and balanced fertilization",
-            "success_rate": "90% if caught early"
+            "notice": "🚨 URGENT: If >30% of leaves are infected, stop using nitrogen fertilizer and consult agricultural officer immediately"
         },
         "ne": {
             "title": "🔥 पात विस्फोट आपातकालीन उपचार",
@@ -267,14 +264,13 @@ CARE_DATA = {
                 "🧪 स्यूडोमोनास फ्लोरेसेन्स जैविक नियन्त्रण प्रयोग गर्नुहोस्",
                 "🌾 प्रतिरोधको लागि पोटासियम सिलिकेट प्रयोग गर्नुहोस्"
             ],
-            "consult_doctor": "🚨 अत्यावश्यक: यदि ३०% भन्दा बढी पातहरू संक्रमित छन् भने, नाइट्रोजन मल प्रयोग बन्द गर्नुहोस् र तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्",
+            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू, उचित दूरी, र सन्तुलित मल प्रयोग गर्नुहोस्",
             "safety_warnings": [
                 "⚠️ अत्यधिक नाइट्रोजन मल नलगाउनुहोस्",
                 "⚠️ बिरुवाहरू धेरै नजिक नरोप्नुहोस्",
                 "⚠️ संक्रमित बीउहरू प्रयोग नगर्नुहोस्"
             ],
-            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू, उचित दूरी, र सन्तुलित मल प्रयोग गर्नुहोस्",
-            "success_rate": "प्रारम्भिक अवस्थामा ९०% सफलता"
+            "notice": "🚨 अत्यावश्यक: यदि ३०% भन्दा बढी पातहरू संक्रमित छन् भने, नाइट्रोजन मल प्रयोग बन्द गर्नुहोस् र तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्"
         }
     },
     "Rice - Neck Blast": {
@@ -291,14 +287,13 @@ CARE_DATA = {
                 "🧪 Use Trichoderma viride in soil application",
                 "🌾 Apply balanced fertilizer with extra potassium"
             ],
-            "consult_doctor": "🚨 CRITICAL: If panicle neck turns brown and grains are empty, consult agricultural officer immediately - this can spread to entire field within 5-7 days",
+            "prevention": "🛡️ Use resistant varieties, practice crop rotation, and use disease-free seeds",
             "safety_warnings": [
                 "⚠️ DO NOT plant rice in same field consecutively",
                 "⚠️ DO NOT use infected seeds",
                 "⚠️ DO NOT over-fertilize with nitrogen"
             ],
-            "prevention": "🛡️ Use resistant varieties, practice crop rotation, and use disease-free seeds",
-            "success_rate": "75% with proper management"
+            "notice": "🚨 CRITICAL: If panicle neck turns brown and grains are empty, consult agricultural officer immediately - this can spread to entire field within 5-7 days"
         },
         "ne": {
             "title": "🌾 घाँटी विस्फोट उपचार प्रोटोकल",
@@ -313,14 +308,13 @@ CARE_DATA = {
                 "🧪 ट्राइकोडर्मा भिराइड माटोमा प्रयोग गर्नुहोस्",
                 "🌾 अतिरिक्त पोटासियमसहित सन्तुलित मल प्रयोग गर्नुहोस्"
             ],
-            "consult_doctor": "🚨 महत्वपूर्ण: यदि बालाको घाँटी खैरो हुन्छ र अन्नहरू खाली छन् भने, तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस् - यो ५-७ दिनमा पूरै खेतमा फैलिन सक्छ",
+            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू, बाली चक्रण, र रोग-मुक्त बीउहरू प्रयोग गर्नुहोस्",
             "safety_warnings": [
                 "⚠️ एउटै खेतमा लगातार धान नरोप्नुहोस्",
                 "⚠️ संक्रमित बीउहरू प्रयोग नगर्नुहोस्",
                 "⚠️ नाइट्रोजनको अत्यधिक मल नलगाउनुहोस्"
             ],
-            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू, बाली चक्रण, र रोग-मुक्त बीउहरू प्रयोग गर्नुहोस्",
-            "success_rate": "७५% सही व्यवस्थापनमा"
+            "notice": "🚨 महत्वपूर्ण: यदि बालाको घाँटी खैरो हुन्छ र अन्नहरू खाली छन् भने, तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस् - यो ५-७ दिनमा पूरै खेतमा फैलिन सक्छ"
         }
     },
     "Rice - Healthy": {
@@ -337,14 +331,13 @@ CARE_DATA = {
                 "💧 Maintain 5-8cm standing water during vegetative stage",
                 "🌱 Practice integrated pest management (IPM)"
             ],
-            "consult_doctor": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual leaf spots or wilting",
+            "prevention": "🛡️ Continue good agricultural practices and regular monitoring",
             "safety_warnings": [
                 "✅ Maintain good field hygiene",
                 "✅ Use certified disease-free seeds for next season",
                 "✅ Practice crop rotation to maintain soil health"
             ],
-            "prevention": "🛡️ Continue good agricultural practices and regular monitoring",
-            "success_rate": "100% - Healthy crop!"
+            "notice": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual leaf spots or wilting"
         },
         "ne": {
             "title": "🌾 स्वस्थ धान हेरचाह गाइड",
@@ -359,14 +352,13 @@ CARE_DATA = {
                 "💧 बिरुवा बढ्ने अवस्थामा ५-८ सेमी पानी कायम राख्नुहोस्",
                 "🌱 एकीकृत कीट व्यवस्थापन (IPM) अभ्यास गर्नुहोस्"
             ],
-            "consult_doctor": "✅ तपाईंको बाली स्वस्थ देखिन्छ! नियमित निगरानी जारी राख्नुहोस् र कुनै असामान्य पात धब्बा वा सुख्खापन देखिएमा सल्लाह लिनुहोस्",
+            "prevention": "🛡️ राम्रो कृषि अभ्यास र नियमित निगरानी जारी राख्नुहोस्",
             "safety_warnings": [
                 "✅ राम्रो खेत सरसफाई कायम राख्नुहोस्",
                 "✅ अर्को सिजनको लागि प्रमाणित रोग-मुक्त बीउ प्रयोग गर्नुहोस्",
                 "✅ माटोको स्वास्थ्य कायम राख्न बाली चक्रण अभ्यास गर्नुहोस्"
             ],
-            "prevention": "🛡️ राम्रो कृषि अभ्यास र नियमित निगरानी जारी राख्नुहोस्",
-            "success_rate": "१००% - स्वस्थ बाली!"
+            "notice": "✅ तपाईंको बाली स्वस्थ देखिन्छ! नियमित निगरानी जारी राख्नुहोस् र कुनै असामान्य पात धब्बा वा सुख्खापन देखिएमा सल्लाह लिनुहोस्"
         }
     },
     "Potato - Early Blight": {
@@ -383,14 +375,13 @@ CARE_DATA = {
                 "🧪 Use Bacillus subtilis as bio-control",
                 "🌾 Apply potassium-rich fertilizer for resistance"
             ],
-            "consult_doctor": "⚠️ If stem lesions appear or >50% leaves affected, consult plant pathologist immediately - may spread to tubers",
+            "prevention": "🛡️ Use certified disease-free seed potatoes, practice crop rotation (3-4 years), and maintain proper drainage",
             "safety_warnings": [
                 "⚠️ DO NOT compost infected plant material",
                 "⚠️ DO NOT over-water",
                 "⚠️ DO NOT work in field when wet"
             ],
-            "prevention": "🛡️ Use certified disease-free seed potatoes, practice crop rotation (3-4 years), and maintain proper drainage",
-            "success_rate": "80% with early treatment"
+            "notice": "⚠️ If stem lesions appear or >50% leaves affected, consult plant pathologist immediately - may spread to tubers"
         },
         "ne": {
             "title": "🥔 प्रारम्भिक झुसा उपचार प्रोटोकल",
@@ -405,14 +396,13 @@ CARE_DATA = {
                 "🧪 ब्यासिलस सबटिलिस जैविक नियन्त्रणको रूपमा प्रयोग गर्नुहोस्",
                 "🌾 प्रतिरोधको लागि पोटासियम युक्त मल लगाउनुहोस्"
             ],
-            "consult_doctor": "⚠️ यदि डाँठमा घाउ देखिन्छ वा ५०% भन्दा बढी पातहरू प्रभावित छन् भने, तुरुन्त बिरुवा रोग विशेषज्ञसँग सम्पर्क गर्नुहोस् - आलुसम्म फैलिन सक्छ",
+            "prevention": "🛡️ प्रमाणित रोग-मुक्त बीउ आलु प्रयोग गर्नुहोस्, बाली चक्रण (३-४ वर्ष) अभ्यास गर्नुहोस्, र राम्रो जल निकासी कायम राख्नुहोस्",
             "safety_warnings": [
                 "⚠️ संक्रमित बिरुवाको कम्पोस्ट नबनाउनुहोस्",
                 "⚠️ अत्यधिक पानी नदिनुहोस्",
                 "⚠️ खेत भिजेको बेला काम नगर्नुहोस्"
             ],
-            "prevention": "🛡️ प्रमाणित रोग-मुक्त बीउ आलु प्रयोग गर्नुहोस्, बाली चक्रण (३-४ वर्ष) अभ्यास गर्नुहोस्, र राम्रो जल निकासी कायम राख्नुहोस्",
-            "success_rate": "प्रारम्भिक उपचारमा ८०% सफलता"
+            "notice": "⚠️ यदि डाँठमा घाउ देखिन्छ वा ५०% भन्दा बढी पातहरू प्रभावित छन् भने, तुरुन्त बिरुवा रोग विशेषज्ञसँग सम्पर्क गर्नुहोस् - आलुसम्म फैलिन सक्छ"
         }
     },
     "Potato - Late Blight": {
@@ -429,14 +419,13 @@ CARE_DATA = {
                 "🧪 Use copper-based spray as preventive on healthy plants",
                 "🌾 Apply potash fertilizer to boost plant immunity"
             ],
-            "consult_doctor": "🚨 URGENT: Late blight is highly contagious and can destroy entire crop in 7 days. CONTACT AGRICULTURAL OFFICER IMMEDIATELY if you see water-soaked lesions",
+            "prevention": "🛡️ Use resistant varieties, practice strict field hygiene, apply preventive fungicides before rainy season",
             "safety_warnings": [
                 "⚠️ DO NOT touch infected plants without gloves",
                 "⚠️ DO NOT compost infected plant material",
                 "⚠️ DO NOT work in wet fields - spreads through water"
             ],
-            "prevention": "🛡️ Use resistant varieties, practice strict field hygiene, apply preventive fungicides before rainy season",
-            "success_rate": "60% if caught within 2 days of symptoms"
+            "notice": "🚨 URGENT: Late blight is highly contagious and can destroy entire crop in 7 days. CONTACT AGRICULTURAL OFFICER IMMEDIATELY if you see water-soaked lesions"
         },
         "ne": {
             "title": "🥔 ढिलो झुसा - आपातकालीन प्रतिक्रिया",
@@ -451,14 +440,13 @@ CARE_DATA = {
                 "🧪 स्वस्थ बिरुवाहरूमा रोकथामको लागि तामा-आधारित स्प्रे प्रयोग गर्नुहोस्",
                 "🌾 बिरुवाको प्रतिरोध क्षमता बढाउन पोटास मल लगाउनुहोस्"
             ],
-            "consult_doctor": "🚨 अत्यावश्यक: ढिलो झुसा अत्यन्त संक्रामक छ र ७ दिनमा पूरै बाली नष्ट गर्न सक्छ। यदि पानीले भिजेको घाउ देख्नुभयो भने तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्",
+            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू प्रयोग गर्नुहोस्, कडा खेत सरसफाई अभ्यास गर्नुहोस्, वर्षायाम अघि रोकथाम फंगिसाइड लगाउनुहोस्",
             "safety_warnings": [
                 "⚠️ पन्जा बिना संक्रमित बिरुवाहरू नछुनुहोस्",
                 "⚠️ संक्रमित बिरुवाको कम्पोस्ट नबनाउनुहोस्",
                 "⚠️ भिजेको खेतमा काम नगर्नुहोस् - पानीबाट फैलिन्छ"
             ],
-            "prevention": "🛡️ प्रतिरोधी प्रजातिहरू प्रयोग गर्नुहोस्, कडा खेत सरसफाई अभ्यास गर्नुहोस्, वर्षायाम अघि रोकथाम फंगिसाइड लगाउनुहोस्",
-            "success_rate": "लक्षण देखिएको २ दिनभित्र उपचार गरेमा ६०% सफलता"
+            "notice": "🚨 अत्यावश्यक: ढिलो झुसा अत्यन्त संक्रामक छ र ७ दिनमा पूरै बाली नष्ट गर्न सक्छ। यदि पानीले भिजेको घाउ देख्नुभयो भने तुरुन्त कृषि अधिकारीसँग सम्पर्क गर्नुहोस्"
         }
     },
     "Potato - Healthy": {
@@ -475,14 +463,13 @@ CARE_DATA = {
                 "💧 Maintain consistent moisture - don't let soil dry out",
                 "🌱 Rotate crops annually to prevent soil-borne diseases"
             ],
-            "consult_doctor": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual spots or wilting",
+            "prevention": "🛡️ Continue good agricultural practices and regular monitoring",
             "safety_warnings": [
                 "✅ Use disease-free seed tubers",
                 "✅ Practice crop rotation (avoid planting potatoes in same field for 3-4 years)",
                 "✅ Maintain proper drainage to prevent waterlogging"
             ],
-            "prevention": "🛡️ Continue good agricultural practices and regular monitoring",
-            "success_rate": "100% - Healthy crop!"
+            "notice": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual spots or wilting"
         },
         "ne": {
             "title": "🥔 स्वस्थ आलु हेरचाह गाइड",
@@ -497,14 +484,13 @@ CARE_DATA = {
                 "💧 लगातार चिस्यान कायम राख्नुहोस् - माटो सुख्खा हुन नदिनुहोस्",
                 "🌱 माटोबाट हुने रोगहरू रोक्न वार्षिक बाली चक्रण गर्नुहोस्"
             ],
-            "consult_doctor": "✅ तपाईंको बाली स्वस्थ देखिन्छ! नियमित निगरानी जारी राख्नुहोस् र कुनै असामान्य धब्बा वा सुख्खापन देखिएमा सल्लाह लिनुहोस्",
+            "prevention": "🛡️ राम्रो कृषि अभ्यास र नियमित निगरानी जारी राख्नुहोस्",
             "safety_warnings": [
                 "✅ रोग-मुक्त बीउ आलु प्रयोग गर्नुहोस्",
                 "✅ बाली चक्रण अभ्यास गर्नुहोस् (एउटै खेतमा ३-४ वर्षसम्म आलु नरोप्नुहोस्)",
                 "✅ पानी जम्न नदिन उचित जल निकासी कायम राख्नुहोस्"
             ],
-            "prevention": "🛡️ राम्रो कृषि अभ्यास र नियमित निगरानी जारी राख्नुहोस्",
-            "success_rate": "१००% - स्वस्थ बाली!"
+            "notice": "✅ तपाईंको बाली स्वस्थ देखिन्छ! नियमित निगरानी जारी राख्नुहोस् र कुनै असामान्य धब्बा वा सुख्खापन देखिएमा सल्लाह लिनुहोस्"
         }
     }
 }
@@ -539,10 +525,9 @@ def get_care(disease_name, lang='en'):
             'title': 'Care Instructions Not Found' if lang == 'en' else 'हेरचाह निर्देशनहरू फेला परेन',
             'immediate_actions': ['Please consult a plant expert for guidance'] if lang == 'en' else ['कृपया बिरुवा विशेषज्ञसँग सल्लाह लिनुहोस्'],
             'treatment_options': [],
-            'consult_doctor': 'Contact your local agricultural extension office' if lang == 'en' else 'आफ्नो स्थानीय कृषि कार्यालयलाई सम्पर्क गर्नुहोस्',
-            'safety_warnings': ['Seek professional advice'] if lang == 'en' else ['पेशागत सल्लाह लिनुहोस्'],
             'prevention': 'Regular monitoring is recommended' if lang == 'en' else 'नियमित निगरानी सिफारिस गरिन्छ',
-            'success_rate': 'Unknown' if lang == 'en' else 'अज्ञात'
+            'safety_warnings': ['Seek professional advice'] if lang == 'en' else ['पेशागत सल्लाह लिनुहोस्'],
+            'notice': 'Contact your local agricultural extension office' if lang == 'en' else 'आफ्नो स्थानीय कृषि कार्यालयलाई सम्पर्क गर्नुहोस्'
         }
     
     data = CARE_DATA[disease_key]
