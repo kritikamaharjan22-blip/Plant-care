@@ -1,4 +1,4 @@
-# app.py - COMPLETE FINAL VERSION
+# app.py - COMPLETE FINAL VERSION WITH READ OUT LOUD (Icon moved to Guidance section)
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 # Import our modules
 from garbage_collection import clear_memory, print_memory, cleanup_variables
 from translation import get_care, get_language_name, CARE_DATA, get_ui_text
+from speech import build_speech_text, clean_text_for_speech, get_speech_language
 
 app = Flask(__name__)
 app.secret_key = 'plant_care_secret'
@@ -82,7 +83,7 @@ DISEASE_TRANSLATIONS = {
 }
 
 # ============================================
-# HTML - COMPLETE FINAL VERSION
+# HTML - COMPLETE FINAL VERSION (Speaker moved)
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -164,6 +165,8 @@ HTML_TEMPLATE = '''
         
         .btn-tutorial { background: #ff9800; color: white; }
         
+        /* REMOVED THE BLUE SPEAKER BUTTON CSS FROM HERE */
+
         .lang-toggle {
             background: #e8f5e9;
             padding: 8px 16px;
@@ -334,8 +337,44 @@ HTML_TEMPLATE = '''
 
         .care-section { margin-top: 18px; padding: 16px; background: #f5f5f5; border-radius: 12px; display: none; }
         .care-section.visible { display: block; }
-        .care-title { font-size: 18px; font-weight: 700; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .translation-badge { display: inline-block; background: #43a047; color: white; font-size: 10px; padding: 2px 10px; border-radius: 12px; margin-left: 8px; font-weight: 600; }
+
+        /* --- NEW GREEN SPEAKER CSS START --- */
+        .care-title { 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: #2e7d32; 
+            margin-bottom: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        
+        .btn-speech-green {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #2E7D32;
+            font-size: 24px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            margin-left: 4px;
+        }
+        
+        .btn-speech-green:hover {
+            transform: scale(1.1);
+        }
+
+        /* Active State (Outlined + Bigger) */
+        .btn-speech-green.speaking {
+            color: transparent;
+            -webkit-text-stroke: 2.5px #2E7D32;
+            transform: scale(1.25);
+        }
+        /* --- NEW GREEN SPEAKER CSS END --- */
+
+        .translation-badge { display: inline-block; background: #43a047; color: white; font-size: 10px; padding: 2px 10px; border-radius: 12px; margin-left: 4px; font-weight: 600; }
         
         .care-section-block {
             margin: 10px 0;
@@ -443,6 +482,7 @@ HTML_TEMPLATE = '''
             <button class="btn-sm btn-tutorial" id="tutorialBtn">
                 <span class="emoji">🎓</span> <span id="tutorialLabel">Tutorial</span>
             </button>
+            <!-- BLUE SPEAKER BUTTON REMOVED FROM HERE -->
             <button class="lang-toggle" id="langToggle">
                 <span id="langLabel">English ⇄ नेपाली</span>
             </button>
@@ -482,8 +522,14 @@ HTML_TEMPLATE = '''
             <div class="result-confidence" id="resultConfidence">Confidence: 95.0%</div>
             <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 95%"></div></div>
             <div class="result-status" id="resultStatus">🌿 Your plant appears healthy!</div>
+            
             <div class="care-section" id="careSection">
-                <div class="care-title" id="careTitle">📋 Post Care Guidance <span class="translation-badge" id="langBadge">EN</span></div>
+                <div class="care-title" id="careTitle">
+                    <span id="careTitleText">📋 Post Care Guidance</span>
+                    <!-- GREEN SPEAKER ICON ADDED HERE -->
+                    <button class="btn-speech-green" id="speechGreenBtn" title="Listen to guidance">🔊</button>
+                    <span class="translation-badge" id="langBadge">EN</span>
+                </div>
                 <div id="careSteps"></div>
             </div>
         </div>
@@ -498,15 +544,14 @@ HTML_TEMPLATE = '''
         const UI_TEXT = {{ ui_text | tojson | default('{}') }};
         const DISEASE_TRANSLATIONS = {{ disease_translations | tojson | default('{}') }};
 
-        console.log('🔍 UI_TEXT loaded:', UI_TEXT);
-        console.log('🔍 DISEASE_TRANSLATIONS loaded:', DISEASE_TRANSLATIONS);
-
         // ============================================
         // STATE
         // ============================================
         let currentLang = 'en';
         let selectedFile = null;
         let diseaseData = null;
+        let isSpeaking = false;
+        let speechSynth = window.speechSynthesis;
 
         // ============================================
         // CONVERT ENGLISH NUMBER TO NEPALI
@@ -544,6 +589,7 @@ HTML_TEMPLATE = '''
             resultStatus: document.getElementById('resultStatus'),
             careSection: document.getElementById('careSection'),
             careTitle: document.getElementById('careTitle'),
+            careTitleText: document.getElementById('careTitleText'),
             careSteps: document.getElementById('careSteps'),
             langBadge: document.getElementById('langBadge'),
             fileInput: document.getElementById('fileInput'),
@@ -554,8 +600,99 @@ HTML_TEMPLATE = '''
             tutorialBtn: document.getElementById('tutorialBtn'),
             tutorialModal: document.getElementById('tutorialModal'),
             tutorialCloseBtn: document.getElementById('tutorialCloseBtn'),
-            tutorialVideoContainer: document.getElementById('tutorialVideoContainer')
+            tutorialVideoContainer: document.getElementById('tutorialVideoContainer'),
+            speechGreenBtn: document.getElementById('speechGreenBtn') // NEW GREEN BTN
         };
+
+        // ============================================
+        // SPEECH SYNTHESIS FUNCTIONS
+        // ============================================
+        function speakText(text, lang, callback) {
+            if (!speechSynth) {
+                if (callback) callback();
+                return;
+            }
+            try { speechSynth.cancel(); } catch(e) {}
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            let speaking = true;
+            utterance.onstart = () => {
+                isSpeaking = true;
+                if (el.speechGreenBtn) {
+                    el.speechGreenBtn.classList.add('speaking');
+                }
+            };
+            
+            utterance.onend = () => {
+                speaking = false;
+                isSpeaking = false;
+                if (el.speechGreenBtn) {
+                    el.speechGreenBtn.classList.remove('speaking');
+                }
+                if (callback) callback();
+            };
+            
+            utterance.onerror = () => {
+                speaking = false;
+                isSpeaking = false;
+                if (el.speechGreenBtn) {
+                    el.speechGreenBtn.classList.remove('speaking');
+                }
+                if (callback) callback();
+            };
+            
+            speechSynth.speak(utterance);
+            
+            setTimeout(() => {
+                if (speaking) {
+                    try { speechSynth.cancel(); } catch(e) {}
+                    isSpeaking = false;
+                    if (el.speechGreenBtn) {
+                        el.speechGreenBtn.classList.remove('speaking');
+                    }
+                    if (callback) callback();
+                }
+            }, 30000);
+        }
+
+        function stopSpeaking() {
+            try { if (speechSynth) speechSynth.cancel(); } catch(e) {}
+            isSpeaking = false;
+            if (el.speechGreenBtn) {
+                el.speechGreenBtn.classList.remove('speaking');
+            }
+        }
+
+        function readCareInstructions() {
+            if (!diseaseData) {
+                alert(currentLang === 'en' ? 'Please diagnose a plant first!' : 'कृपया पहिले बिरुवा निदान गर्नुहोस्!');
+                return;
+            }
+
+            if (isSpeaking) {
+                stopSpeaking();
+                return;
+            }
+
+            // Get the speech text from the backend (uses speech.py)
+            fetch(`/api/speech_text?lang=${currentLang}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.text) {
+                        speakText(data.text, currentLang, () => {});
+                    } else {
+                        alert(currentLang === 'en' ? 'No speech available' : 'कुनै भाषण उपलब्ध छैन');
+                    }
+                })
+                .catch(() => {
+                    alert(currentLang === 'en' ? 'Error generating speech' : 'भाषण उत्पन्न गर्न त्रुटि');
+                });
+        }
 
         // ============================================
         // REMOVE IMAGE FUNCTION
@@ -569,6 +706,7 @@ HTML_TEMPLATE = '''
             el.predictBtn.disabled = true;
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
+            stopSpeaking();
             
             // Reset upload area
             el.uploadIcon.style.display = 'block';
@@ -661,10 +799,9 @@ HTML_TEMPLATE = '''
             }
             
             // Update care title
-            if (el.careTitle) {
+            if (el.careTitleText) {
                 const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
-                const badge = lang === 'en' ? 'EN' : 'ने';
-                el.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+                el.careTitleText.textContent = titleText;
             }
             if (el.langBadge) {
                 el.langBadge.textContent = lang === 'en' ? 'EN' : 'ने';
@@ -674,7 +811,7 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // DISPLAY RESULT - Updated with new format
+        // DISPLAY RESULT
         // ============================================
         function displayResult(data) {
             const isHealthy = data.class.includes('Healthy');
@@ -715,14 +852,13 @@ HTML_TEMPLATE = '''
                 el.careSection.classList.add('visible');
                 
                 const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
+                el.careTitleText.textContent = titleText;
                 const badge = lang === 'en' ? 'EN' : 'ने';
-                el.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
+                el.langBadge.textContent = badge;
                 
                 let html = '';
                 
-                // ============================================
                 // What to do now - Contains Immediate Actions and Treatment Options
-                // ============================================
                 let hasImmediateActions = data.care.immediate_actions && data.care.immediate_actions.length > 0;
                 let hasTreatmentOptions = data.care.treatment_options && data.care.treatment_options.length > 0;
                 
@@ -752,9 +888,7 @@ HTML_TEMPLATE = '''
                     html += `</div>`;
                 }
                 
-                // ============================================
                 // Prevention
-                // ============================================
                 if (data.care.prevention) {
                     html += `
                         <div class="care-section-block">
@@ -764,9 +898,7 @@ HTML_TEMPLATE = '''
                     `;
                 }
                 
-                // ============================================
                 // Safety warnings
-                // ============================================
                 if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
                     html += `
                         <div class="care-section-block">
@@ -778,9 +910,7 @@ HTML_TEMPLATE = '''
                     `;
                 }
                 
-                // ============================================
                 // Notice
-                // ============================================
                 if (data.care.notice) {
                     html += `
                         <div class="care-section-block notice">
@@ -954,6 +1084,9 @@ HTML_TEMPLATE = '''
             translatePage(newLang);
         });
 
+        // New Green Speaker button listener
+        el.speechGreenBtn.addEventListener('click', readCareInstructions);
+
         el.tutorialBtn.addEventListener('click', showTutorial);
         el.tutorialCloseBtn.addEventListener('click', closeTutorial);
         el.tutorialModal.addEventListener('click', function(e) {
@@ -993,6 +1126,35 @@ def get_ui_text_api():
     ui_text = get_ui_text(lang)
     return jsonify(ui_text)
 
+@app.route('/api/speech_text', methods=['GET'])
+def get_speech_text():
+    """Get formatted text for speech synthesis (Uses speech.py)"""
+    try:
+        lang = request.args.get('lang', 'en')
+        
+        # Get the disease class from session
+        disease_class = session.get('last_disease_class')
+        if not disease_class:
+            return jsonify({'success': False, 'error': 'No disease data available'}), 400
+        
+        # Get care instructions
+        care = get_care(disease_class, lang)
+        disease_data = {'class': disease_class, 'care': care}
+        ui_text = get_ui_text(lang)
+        
+        # Build speech text using speech.py
+        text = build_speech_text(disease_data, ui_text, lang)
+        
+        return jsonify({
+            'success': True,
+            'text': text,
+            'language': lang
+        })
+        
+    except Exception as e:
+        print(f"❌ Speech error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
@@ -1019,6 +1181,9 @@ def predict():
 
         os.remove(filepath)
         cleanup_variables(img, img_array, predictions)
+
+        # Save to session for speech feature
+        session['last_disease_class'] = predicted_class
 
         lang = request.args.get('lang', 'en')
         care = get_care(predicted_class, lang)
@@ -1071,6 +1236,7 @@ if __name__ == '__main__':
     print("=" * 50)
     print(f"📊 Detects: {len(class_names)} plant conditions")
     print(f"🗣️  Languages: English + Nepali (FULL TRANSLATION)")
+    print(f"🔊 Read Out Loud: Green Speaker next to Guidance")
     print(f"🚀 Server: http://127.0.0.1:5000")
     print("=" * 50 + "\n")
     app.run(debug=True, threaded=True)
