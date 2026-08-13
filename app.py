@@ -1,4 +1,4 @@
-# app.py - COMPLETE FINAL VERSION WITH READ OUT LOUD (Icon moved to Guidance section)
+# app.py - COMPLETE FINAL VERSION WITH gTTS (No credit card needed)
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -9,6 +9,11 @@ import json
 import gc
 import tensorflow as tf
 from werkzeug.utils import secure_filename
+
+# NEW IMPORTS FOR gTTS (Audio generation without saving files)
+import io
+import base64
+from gtts import gTTS
 
 # Import our modules
 from garbage_collection import clear_memory, print_memory, cleanup_variables
@@ -165,8 +170,6 @@ HTML_TEMPLATE = '''
         
         .btn-tutorial { background: #ff9800; color: white; }
         
-        /* REMOVED THE BLUE SPEAKER BUTTON CSS FROM HERE */
-
         .lang-toggle {
             background: #e8f5e9;
             padding: 8px 16px;
@@ -482,7 +485,6 @@ HTML_TEMPLATE = '''
             <button class="btn-sm btn-tutorial" id="tutorialBtn">
                 <span class="emoji">🎓</span> <span id="tutorialLabel">Tutorial</span>
             </button>
-            <!-- BLUE SPEAKER BUTTON REMOVED FROM HERE -->
             <button class="lang-toggle" id="langToggle">
                 <span id="langLabel">English ⇄ नेपाली</span>
             </button>
@@ -551,7 +553,6 @@ HTML_TEMPLATE = '''
         let selectedFile = null;
         let diseaseData = null;
         let isSpeaking = false;
-        let speechSynth = window.speechSynthesis;
 
         // ============================================
         // CONVERT ENGLISH NUMBER TO NEPALI
@@ -605,69 +606,41 @@ HTML_TEMPLATE = '''
         };
 
         // ============================================
-        // SPEECH SYNTHESIS FUNCTIONS
+        // PLAY AUDIO FROM BASE64 (gTTS version)
         // ============================================
-        function speakText(text, lang, callback) {
-            if (!speechSynth) {
-                if (callback) callback();
+        function playAudioFromBase64(base64Data) {
+            // If it's already speaking, stop it
+            if (isSpeaking) {
+                stopSpeaking();
                 return;
             }
-            try { speechSynth.cancel(); } catch(e) {}
             
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang === 'ne' ? 'ne-NP' : 'en-US';
-            utterance.rate = 0.85;
-            utterance.pitch = 1;
-            utterance.volume = 1;
+            // Create an audio player from the Base64 data
+            const audio = new Audio('data:audio/mp3;base64,' + base64Data);
             
-            let speaking = true;
-            utterance.onstart = () => {
+            // When it starts playing
+            audio.onplay = () => {
                 isSpeaking = true;
                 if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.add('speaking');
+                    el.speechGreenBtn.classList.add('speaking'); // Makes it outlined and bigger
                 }
             };
             
-            utterance.onend = () => {
-                speaking = false;
+            // When it finishes playing
+            audio.onended = () => {
                 isSpeaking = false;
                 if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.remove('speaking');
+                    el.speechGreenBtn.classList.remove('speaking'); // Back to solid green
                 }
-                if (callback) callback();
             };
             
-            utterance.onerror = () => {
-                speaking = false;
-                isSpeaking = false;
-                if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.remove('speaking');
-                }
-                if (callback) callback();
-            };
-            
-            speechSynth.speak(utterance);
-            
-            setTimeout(() => {
-                if (speaking) {
-                    try { speechSynth.cancel(); } catch(e) {}
-                    isSpeaking = false;
-                    if (el.speechGreenBtn) {
-                        el.speechGreenBtn.classList.remove('speaking');
-                    }
-                    if (callback) callback();
-                }
-            }, 30000);
+            // Play the audio!
+            audio.play();
         }
 
-        function stopSpeaking() {
-            try { if (speechSynth) speechSynth.cancel(); } catch(e) {}
-            isSpeaking = false;
-            if (el.speechGreenBtn) {
-                el.speechGreenBtn.classList.remove('speaking');
-            }
-        }
-
+        // ============================================
+        // READ CARE INSTRUCTIONS (UPDATED FOR gTTS)
+        // ============================================
         function readCareInstructions() {
             if (!diseaseData) {
                 alert(currentLang === 'en' ? 'Please diagnose a plant first!' : 'कृपया पहिले बिरुवा निदान गर्नुहोस्!');
@@ -679,19 +652,32 @@ HTML_TEMPLATE = '''
                 return;
             }
 
-            // Get the speech text from the backend (uses speech.py)
+            // Ask the backend for the audio
             fetch(`/api/speech_text?lang=${currentLang}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success && data.text) {
-                        speakText(data.text, currentLang, () => {});
+                    if (data.success && data.audio_base64) {
+                        playAudioFromBase64(data.audio_base64); // Play the audio!
                     } else {
-                        alert(currentLang === 'en' ? 'No speech available' : 'कुनै भाषण उपलब्ध छैन');
+                        alert(currentLang === 'en' ? 'Error generating audio' : 'अडियो उत्पन्न गर्न त्रुटि');
                     }
                 })
                 .catch(() => {
-                    alert(currentLang === 'en' ? 'Error generating speech' : 'भाषण उत्पन्न गर्न त्रुटि');
+                    alert(currentLang === 'en' ? 'Network error. Check your internet!' : 'नेटवर्क त्रुटि। आफ्नो इन्टरनेट जाँच गर्नुहोस्!');
                 });
+        }
+
+        // ============================================
+        // STOP SPEAKING
+        // ============================================
+        function stopSpeaking() {
+            // Since gTTS plays like a normal song, we just pause the audio elements
+            // We loop through all audios and pause them
+            document.querySelectorAll('audio').forEach(audio => audio.pause());
+            isSpeaking = false;
+            if (el.speechGreenBtn) {
+                el.speechGreenBtn.classList.remove('speaking');
+            }
         }
 
         // ============================================
@@ -1128,26 +1114,44 @@ def get_ui_text_api():
 
 @app.route('/api/speech_text', methods=['GET'])
 def get_speech_text():
-    """Get formatted text for speech synthesis (Uses speech.py)"""
+    """Generate audio using gTTS (No credit card, no storage needed!)"""
     try:
         lang = request.args.get('lang', 'en')
         
-        # Get the disease class from session
+        # Get the disease class from the session (saved when you analyzed the image)
         disease_class = session.get('last_disease_class')
         if not disease_class:
             return jsonify({'success': False, 'error': 'No disease data available'}), 400
         
-        # Get care instructions
+        # Get care instructions from your translation.py
         care = get_care(disease_class, lang)
         disease_data = {'class': disease_class, 'care': care}
         ui_text = get_ui_text(lang)
         
-        # Build speech text using speech.py
+        # Build the clean text using your speech.py (removes emojis)
         text = build_speech_text(disease_data, ui_text, lang)
+        
+        # ============================================
+        # gTTS GENERATION CODE (Happens in RAM, no file saved)
+        # ============================================
+        # Google needs 'ne' for Nepali, or 'en' for English
+        tts_lang = 'ne' if lang == 'ne' else 'en'
+        
+        # Create the audio file IN MEMORY (doesn't touch your hard drive)
+        tts = gTTS(text=text, lang=tts_lang, slow=False) 
+        
+        # Save it to a temporary RAM buffer
+        audio_bytes = io.BytesIO()
+        tts.write_to_fp(audio_bytes)
+        audio_bytes.seek(0) # Rewind the buffer back to the start
+        
+        # Convert the audio bytes to Base64 text so we can send it over the internet to the browser
+        audio_base64 = base64.b64encode(audio_bytes.read()).decode('utf-8')
+        # ============================================
         
         return jsonify({
             'success': True,
-            'text': text,
+            'audio_base64': audio_base64, # Send audio to browser
             'language': lang
         })
         
@@ -1236,7 +1240,7 @@ if __name__ == '__main__':
     print("=" * 50)
     print(f"📊 Detects: {len(class_names)} plant conditions")
     print(f"🗣️  Languages: English + Nepali (FULL TRANSLATION)")
-    print(f"🔊 Read Out Loud: Green Speaker next to Guidance")
+    print(f"🔊 Read Out Loud: Google gTTS (No credit card needed!)")
     print(f"🚀 Server: http://127.0.0.1:5000")
     print("=" * 50 + "\n")
     app.run(debug=True, threaded=True)
