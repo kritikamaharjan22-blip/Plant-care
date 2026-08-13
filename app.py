@@ -181,7 +181,6 @@ HTML_TEMPLATE = '''
             z-index: 100;
         }
         .lang-toggle:hover { background: #c8e6c9; transform: scale(1.05); }
-        .lang-toggle .lang-icon { font-size: 20px; }
 
         .plant-info {
             text-align: center;
@@ -254,6 +253,34 @@ HTML_TEMPLATE = '''
         .image-container {
             text-align: center;
             width: 100%;
+            position: relative;
+        }
+        
+        .remove-image-btn {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f44336;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .remove-image-btn:hover {
+            transform: scale(1.1);
+            background: #d32f2f;
+        }
+        .remove-image-btn.show {
+            display: flex;
         }
 
         .analyze-wrapper { margin-top: 16px; width: 100%; }
@@ -390,6 +417,7 @@ HTML_TEMPLATE = '''
             .lang-toggle { font-size: 12px; padding: 6px 12px; }
             .tutorial-modal-content .dummy-video { height: 250px; font-size: 18px; }
             .tutorial-modal-content .dummy-video .big-icon { font-size: 60px; }
+            .remove-image-btn { width: 28px; height: 28px; font-size: 16px; }
         }
     </style>
 </head>
@@ -415,8 +443,7 @@ HTML_TEMPLATE = '''
                 <span class="emoji">🎓</span> <span id="tutorialLabel">Tutorial</span>
             </button>
             <button class="lang-toggle" id="langToggle">
-                <span class="lang-icon" id="langIcon">🇬🇧</span>
-                <span id="langLabel">EN</span>
+                <span id="langLabel">English ⇄ नेपाली</span>
             </button>
         </div>
 
@@ -434,6 +461,7 @@ HTML_TEMPLATE = '''
             <input type="file" id="fileInput" accept="image/*">
             <div class="image-container">
                 <img id="preview" alt="Preview">
+                <button class="remove-image-btn" id="removeImageBtn">✕</button>
             </div>
             <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">📁 Choose Another Image</label>
         </div>
@@ -507,7 +535,6 @@ HTML_TEMPLATE = '''
             footerText: document.getElementById('footerText'),
             tutorialLabel: document.getElementById('tutorialLabel'),
             langLabel: document.getElementById('langLabel'),
-            langIcon: document.getElementById('langIcon'),
             langToggle: document.getElementById('langToggle'),
             resultDiv: document.getElementById('result'),
             resultIcon: document.getElementById('resultIcon'),
@@ -523,6 +550,7 @@ HTML_TEMPLATE = '''
             loadingDiv: document.getElementById('loading'),
             dropZone: document.getElementById('dropZone'),
             preview: document.getElementById('preview'),
+            removeImageBtn: document.getElementById('removeImageBtn'),
             tutorialBtn: document.getElementById('tutorialBtn'),
             tutorialModal: document.getElementById('tutorialModal'),
             tutorialCloseBtn: document.getElementById('tutorialCloseBtn'),
@@ -530,19 +558,39 @@ HTML_TEMPLATE = '''
         };
 
         // ============================================
+        // REMOVE IMAGE FUNCTION
+        // ============================================
+        function removeImage() {
+            selectedFile = null;
+            diseaseData = null;
+            el.preview.src = '';
+            el.preview.classList.remove('show');
+            el.removeImageBtn.classList.remove('show');
+            el.predictBtn.disabled = true;
+            el.resultDiv.style.display = 'none';
+            el.careSection.classList.remove('visible');
+            
+            // Reset upload area
+            el.uploadIcon.style.display = 'block';
+            el.uploadText.style.display = 'block';
+            el.hintText.style.display = 'block';
+            el.browseBtn.style.display = 'inline-block';
+            el.chooseAnotherBtn.style.display = 'none';
+            el.dropZone.classList.remove('has-image');
+            el.fileInput.value = '';
+        }
+
+        // ============================================
         // TRANSLATION FUNCTION
         // ============================================
         function translatePage(lang) {
-            // Fetch the right translations from backend
             fetch(`/api/get_ui_text?lang=${lang}`)
                 .then(res => res.json())
                 .then(uiText => {
-                    // Update UI_TEXT with new translations
                     Object.assign(UI_TEXT, uiText);
                     applyTranslations(lang);
                 })
                 .catch(() => {
-                    // Fallback: use existing UI_TEXT
                     applyTranslations(lang);
                 });
         }
@@ -557,7 +605,7 @@ HTML_TEMPLATE = '''
             
             console.log('🔄 Applying translations for:', lang);
             
-            // App title - translate to Nepali when in Nepali mode
+            // App title
             if (el.appTitle) {
                 el.appTitle.textContent = lang === 'en' ? 'Plant Care' : 'प्लान्ट केयर';
             }
@@ -568,7 +616,7 @@ HTML_TEMPLATE = '''
             // Plant info
             if (el.plantInfoText) el.plantInfoText.textContent = t.diagnosable_plants || 'Currently diagnosable plants:';
             
-            // Badges - Rice and Potato translations
+            // Badges
             if (el.riceBadge) {
                 el.riceBadge.textContent = lang === 'en' ? '🌾 Rice' : '🌾 चामल';
             }
@@ -585,20 +633,33 @@ HTML_TEMPLATE = '''
             if (el.loadingText) el.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
             if (el.footerText) el.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
             
-            // Tutorial button - single emoji
-            if (el.tutorialLabel) el.tutorialLabel.textContent = t.tutorial_btn || 'Tutorial';
-            
-            // Translation button - show language codes with swap symbol
-            if (el.langLabel) {
-                el.langLabel.textContent = lang === 'en' ? 'EN ⇄ नेपाली' : 'NP ⇄ English';
+            // Tutorial button - ONLY the text, NO emoji (emoji is in HTML)
+            if (el.tutorialLabel) {
+                // Remove any emoji from the translation text
+                let tutorialText = t.tutorial_btn || 'Tutorial';
+                // Remove emoji if present (🎓)
+                tutorialText = tutorialText.replace(/[🎓]/g, '').trim();
+                el.tutorialLabel.textContent = tutorialText || 'Tutorial';
             }
-            if (el.langIcon) {
-                el.langIcon.textContent = lang === 'en' ? '🇬🇧' : '🇳🇵';
+            
+            // Translation button
+            if (el.langLabel) {
+                el.langLabel.textContent = lang === 'en' ? 'English ⇄ नेपाली' : 'नेपाली ⇄ अंग्रेजी';
             }
             
             // Update result if exists
             if (diseaseData) {
-                displayResult(diseaseData);
+                fetch(`/api/care/${encodeURIComponent(diseaseData.class)}?lang=${lang}`)
+                    .then(res => res.json())
+                    .then(careData => {
+                        if (careData.success) {
+                            diseaseData.care = careData.care;
+                        }
+                        displayResult(diseaseData);
+                    })
+                    .catch(() => {
+                        displayResult(diseaseData);
+                    });
             }
             
             // Update care title
@@ -620,13 +681,13 @@ HTML_TEMPLATE = '''
         function displayResult(data) {
             const isHealthy = data.class.includes('Healthy');
             const t = UI_TEXT;
+            const lang = currentLang;
             
             // Get translated disease name
             let displayName = data.class;
-            if (DISEASE_TRANSLATIONS[currentLang] && DISEASE_TRANSLATIONS[currentLang][data.class]) {
-                displayName = DISEASE_TRANSLATIONS[currentLang][data.class];
+            if (DISEASE_TRANSLATIONS[lang] && DISEASE_TRANSLATIONS[lang][data.class]) {
+                displayName = DISEASE_TRANSLATIONS[lang][data.class];
             } else {
-                // Replace underscores with spaces as fallback
                 displayName = data.class.replace(/_/g, ' ');
             }
             
@@ -640,8 +701,8 @@ HTML_TEMPLATE = '''
             
             // Format confidence with Nepali numbers if in Nepali mode
             let confidenceText = data.confidence.toFixed(2);
-            let confidenceLabel = currentLang === 'en' ? 'Confidence' : 'विश्वसनीयता';
-            if (currentLang === 'ne') {
+            let confidenceLabel = lang === 'en' ? 'Confidence' : 'विश्वसनीयता';
+            if (lang === 'ne') {
                 confidenceText = toNepaliNumber(data.confidence.toFixed(2));
                 el.resultConfidence.textContent = `${confidenceLabel}: ${confidenceText}%`;
             } else {
@@ -655,9 +716,8 @@ HTML_TEMPLATE = '''
             if (data.care) {
                 el.careSection.classList.add('visible');
                 
-                // Update care title
-                const titleText = currentLang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
-                const badge = currentLang === 'en' ? 'EN' : 'ने';
+                const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
+                const badge = lang === 'en' ? 'EN' : 'ने';
                 el.careTitle.innerHTML = titleText + ' <span class="translation-badge" id="langBadge">' + badge + '</span>';
                 
                 let html = '';
@@ -777,6 +837,7 @@ HTML_TEMPLATE = '''
                 reader.onload = (e) => {
                     el.preview.src = e.target.result;
                     el.preview.classList.add('show');
+                    el.removeImageBtn.classList.add('show');
                     el.uploadIcon.style.display = 'none';
                     el.uploadText.style.display = 'none';
                     el.hintText.style.display = 'none';
@@ -804,6 +865,7 @@ HTML_TEMPLATE = '''
                 reader.onload = (e) => {
                     el.preview.src = e.target.result;
                     el.preview.classList.add('show');
+                    el.removeImageBtn.classList.add('show');
                     el.uploadIcon.style.display = 'none';
                     el.uploadText.style.display = 'none';
                     el.hintText.style.display = 'none';
@@ -813,6 +875,12 @@ HTML_TEMPLATE = '''
                 };
                 reader.readAsDataURL(selectedFile);
             }
+        });
+
+        // Remove image button
+        el.removeImageBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeImage();
         });
 
         // ============================================
