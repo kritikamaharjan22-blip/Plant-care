@@ -35,10 +35,11 @@ UI_TRANSLATIONS = {
         
         # Care Sections
         'what_to_do': 'What to do now',
-        'treatment_options': 'Treatment options',
+        'treatment_options': 'Treatment Options',
         'prevention': 'Prevention',
         'safety_warnings': 'Safety warnings',
         'notice': 'Notice',
+        'immediate_actions': 'Immediate Actions',
         
         # Plant info
         'diagnosable_plants': 'Currently diagnosable plants:',
@@ -59,7 +60,7 @@ UI_TRANSLATIONS = {
     },
     'ne': {
         # App
-        'app_title': 'Plant Care',
+        'app_title': 'प्लान्ट केयर',
         'app_subtitle': 'तपाईंको बिरुवाहरूको लागि स्मार्ट रोग पत्ता लगाउने',
         
         # Header
@@ -91,6 +92,7 @@ UI_TRANSLATIONS = {
         'prevention': 'रोकथाम',
         'safety_warnings': 'सुरक्षा चेतावनीहरू',
         'notice': 'सूचना',
+        'immediate_actions': 'तुरुन्त कार्यहरू',
         
         # Plant info
         'diagnosable_plants': 'हाल निदान गर्न सकिने बिरुवाहरू:',
@@ -112,73 +114,17 @@ UI_TRANSLATIONS = {
 }
 
 # ============================================
-# TUTORIAL TRANSLATIONS
+# DISEASE NAME MAPPING
 # ============================================
-TUTORIAL_TRANSLATIONS = {
-    'en': [
-        {
-            "id": "welcome",
-            "title": "👋 Welcome to Plant Care!",
-            "desc": "Click the Translation button to switch between English and Nepali.",
-            "instruction": "👉 Click the Translation button to continue"
-        },
-        {
-            "id": "upload",
-            "title": "📸 Upload a Leaf Photo",
-            "desc": "Click here or drag and drop a photo of a leaf from your plant.",
-            "instruction": "👉 Click here or press OK to continue"
-        },
-        {
-            "id": "diagnose",
-            "title": "🔍 Diagnose Your Plant",
-            "desc": "After uploading a photo, click here to detect diseases.",
-            "instruction": "👉 Click the Analyze button or press OK"
-        },
-        {
-            "id": "results",
-            "title": "📋 Results & Care Instructions",
-            "desc": "You'll see the disease name, confidence score, and care instructions.",
-            "instruction": "👉 Press OK to continue"
-        },
-        {
-            "id": "features",
-            "title": "🔊 Extra Features",
-            "desc": "Use Read Out Loud to hear instructions. Tutorial replays this guide anytime.",
-            "instruction": "👉 Press OK to finish the tutorial"
-        }
-    ],
-    'ne': [
-        {
-            "id": "welcome",
-            "title": "👋 प्लान्ट केयरमा स्वागत छ!",
-            "desc": "अंग्रेजी र नेपाली बीच स्विच गर्न अनुवाद बटन क्लिक गर्नुहोस्।",
-            "instruction": "👉 जारी राख्न अनुवाद बटन क्लिक गर्नुहोस्"
-        },
-        {
-            "id": "upload",
-            "title": "📸 पातको फोटो अपलोड गर्नुहोस्",
-            "desc": "यहाँ क्लिक गर्नुहोस् वा तपाईंको बिरुवाको पातको फोटो तान्नुहोस्।",
-            "instruction": "👉 जारी राख्न यहाँ क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
-        },
-        {
-            "id": "diagnose",
-            "title": "🔍 आफ्नो बिरुवा निदान गर्नुहोस्",
-            "desc": "फोटो अपलोड गरेपछि, रोग पत्ता लगाउन यहाँ क्लिक गर्नुहोस्।",
-            "instruction": "👉 विश्लेषण बटन क्लिक गर्नुहोस् वा OK थिच्नुहोस्"
-        },
-        {
-            "id": "results",
-            "title": "📋 नतिजा र हेरचाह निर्देशनहरू",
-            "desc": "तपाईंले रोगको नाम, विश्वसनीयता स्कोर, र हेरचाह निर्देशनहरू देख्नुहुनेछ।",
-            "instruction": "👉 जारी राख्न OK थिच्नुहोस्"
-        },
-        {
-            "id": "features",
-            "title": "🔊 अतिरिक्त सुविधाहरू",
-            "desc": "निर्देशनहरू सुन्न पढेर सुनाउनुहोस् प्रयोग गर्नुहोस्। ट्यूटोरियलले यो गाइड पुन: चलाउँछ।",
-            "instruction": "👉 ट्यूटोरियल समाप्त गर्न OK थिच्नुहोस्"
-        }
-    ]
+# Maps model output names to CARE_DATA keys
+DISEASE_NAME_MAPPING = {
+    'Rice___Brown_Spot': 'Rice - Brown Spot',
+    'Rice___Healthy': 'Rice - Healthy',
+    'Rice___Leaf_Blast': 'Rice - Leaf Blast',
+    'Rice___Neck_Blast': 'Rice - Neck Blast',
+    'Potato___Early_Blight': 'Potato - Early Blight',
+    'Potato___Healthy': 'Potato - Healthy',
+    'Potato___Late_Blight': 'Potato - Late Blight'
 }
 
 # ============================================
@@ -187,7 +133,7 @@ TUTORIAL_TRANSLATIONS = {
 CARE_DATA = {
     "Rice - Brown Spot": {
         "en": {
-            "title": "🌾 Brown Spot Treatment Guide",
+            "title": "🌾 Rice - Brown Spot",
             "immediate_actions": [
                 "🔴 Remove infected leaves immediately - dispose in sealed bag",
                 "💧 Apply recommended fungicide (Mancozeb or Copper Oxychloride)",
@@ -208,7 +154,7 @@ CARE_DATA = {
             "notice": "📢 If leaves develop large dark spots (>1cm) or spread rapidly, consult an agricultural officer immediately"
         },
         "ne": {
-            "title": "🌾 खैरो धब्बा उपचार गाइड",
+            "title": "🌾 धान - खैरो धब्बा",
             "immediate_actions": [
                 "🔴 संक्रमित पातहरू तुरुन्त हटाउनुहोस् - बन्द झोलामा फाल्नुहोस्",
                 "💧 सिफारिस गरिएको फंगिसाइड (म्यान्कोजेब वा कपर अक्सिक्लोराइड) प्रयोग गर्नुहोस्",
@@ -231,7 +177,7 @@ CARE_DATA = {
     },
     "Rice - Leaf Blast": {
         "en": {
-            "title": "🔥 Leaf Blast Emergency Treatment",
+            "title": "🌾 Rice - Leaf Blast",
             "immediate_actions": [
                 "🔴 Remove and destroy all infected leaves immediately",
                 "💧 Apply silicon-based fertilizer (foliar spray)",
@@ -252,7 +198,7 @@ CARE_DATA = {
             "notice": "🚨 URGENT: If >30% of leaves are infected, stop using nitrogen fertilizer and consult agricultural officer immediately"
         },
         "ne": {
-            "title": "🔥 पात विस्फोट आपातकालीन उपचार",
+            "title": "🌾 धान - पात विस्फोट",
             "immediate_actions": [
                 "🔴 सबै संक्रमित पातहरू तुरुन्त हटाउनुहोस् र नष्ट गर्नुहोस्",
                 "💧 सिलिकन-आधारित मल (पाते स्प्रे) प्रयोग गर्नुहोस्",
@@ -275,7 +221,7 @@ CARE_DATA = {
     },
     "Rice - Neck Blast": {
         "en": {
-            "title": "🌾 Neck Blast Treatment Protocol",
+            "title": "🌾 Rice - Neck Blast",
             "immediate_actions": [
                 "🔴 Remove infected panicles immediately",
                 "💧 Apply fungicide at booting stage (Edifenphos or Iprodione)",
@@ -296,7 +242,7 @@ CARE_DATA = {
             "notice": "🚨 CRITICAL: If panicle neck turns brown and grains are empty, consult agricultural officer immediately - this can spread to entire field within 5-7 days"
         },
         "ne": {
-            "title": "🌾 घाँटी विस्फोट उपचार प्रोटोकल",
+            "title": "🌾 धान - घाँटी विस्फोट",
             "immediate_actions": [
                 "🔴 संक्रमित बालाहरू तुरुन्त हटाउनुहोस्",
                 "💧 बुटिंग अवस्थामा फंगिसाइड (एडिफेनफोस वा आइप्रोडियोन) लगाउनुहोस्",
@@ -319,7 +265,7 @@ CARE_DATA = {
     },
     "Rice - Healthy": {
         "en": {
-            "title": "🌾 Healthy Rice Care Guide",
+            "title": "🌾 Rice - Healthy",
             "immediate_actions": [
                 "✅ Continue regular watering schedule",
                 "🌱 Apply balanced fertilizer (NPK 4:2:3 ratio) monthly",
@@ -340,7 +286,7 @@ CARE_DATA = {
             "notice": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual leaf spots or wilting"
         },
         "ne": {
-            "title": "🌾 स्वस्थ धान हेरचाह गाइड",
+            "title": "🌾 धान - स्वस्थ",
             "immediate_actions": [
                 "✅ नियमित पानीको तालिका जारी राख्नुहोस्",
                 "🌱 मासिक सन्तुलित मल (NPK ४:२:३ अनुपात) लगाउनुहोस्",
@@ -363,7 +309,7 @@ CARE_DATA = {
     },
     "Potato - Early Blight": {
         "en": {
-            "title": "🥔 Early Blight Treatment Protocol",
+            "title": "🥔 Potato - Early Blight",
             "immediate_actions": [
                 "🔴 Remove and destroy infected leaves - bag and burn",
                 "💧 Apply copper-based fungicide (Copper Oxychloride 3g/L)",
@@ -384,7 +330,7 @@ CARE_DATA = {
             "notice": "⚠️ If stem lesions appear or >50% leaves affected, consult plant pathologist immediately - may spread to tubers"
         },
         "ne": {
-            "title": "🥔 प्रारम्भिक झुसा उपचार प्रोटोकल",
+            "title": "🥔 आलु - प्रारम्भिक झुसा",
             "immediate_actions": [
                 "🔴 संक्रमित पातहरू हटाउनुहोस् र नष्ट गर्नुहोस् - झोलामा बन्द गरी जलाउनुहोस्",
                 "💧 तामा-आधारित फंगिसाइड (कपर अक्सिक्लोराइड ३ ग्राम/लिटर) लगाउनुहोस्",
@@ -407,7 +353,7 @@ CARE_DATA = {
     },
     "Potato - Late Blight": {
         "en": {
-            "title": "🥔 LATE BLIGHT - EMERGENCY RESPONSE",
+            "title": "🥔 Potato - Late Blight",
             "immediate_actions": [
                 "🚨 STOP all irrigation immediately",
                 "🔴 Remove and destroy ALL infected plants - burn them",
@@ -428,7 +374,7 @@ CARE_DATA = {
             "notice": "🚨 URGENT: Late blight is highly contagious and can destroy entire crop in 7 days. CONTACT AGRICULTURAL OFFICER IMMEDIATELY if you see water-soaked lesions"
         },
         "ne": {
-            "title": "🥔 ढिलो झुसा - आपातकालीन प्रतिक्रिया",
+            "title": "🥔 आलु - ढिलो झुसा",
             "immediate_actions": [
                 "🚨 सबै सिँचाइ तुरुन्त बन्द गर्नुहोस्",
                 "🔴 सबै संक्रमित बिरुवाहरू हटाउनुहोस् र नष्ट गर्नुहोस् - जलाउनुहोस्",
@@ -451,7 +397,7 @@ CARE_DATA = {
     },
     "Potato - Healthy": {
         "en": {
-            "title": "🥔 Healthy Potato Care Guide",
+            "title": "🥔 Potato - Healthy",
             "immediate_actions": [
                 "✅ Continue regular watering schedule",
                 "🌱 Apply balanced fertilizer (NPK 3:2:4 ratio) every 2 weeks",
@@ -472,7 +418,7 @@ CARE_DATA = {
             "notice": "✅ Your crop appears healthy! Continue regular monitoring and consult if you notice any unusual spots or wilting"
         },
         "ne": {
-            "title": "🥔 स्वस्थ आलु हेरचाह गाइड",
+            "title": "🥔 आलु - स्वस्थ",
             "immediate_actions": [
                 "✅ नियमित पानीको तालिका जारी राख्नुहोस्",
                 "🌱 हरेक २ हप्तामा सन्तुलित मल (NPK ३:२:४ अनुपात) लगाउनुहोस्",
@@ -505,20 +451,20 @@ def get_ui_text(lang='en'):
         lang = 'en'
     return UI_TRANSLATIONS[lang]
 
-def get_tutorial_steps(lang='en'):
-    """Get tutorial steps in a language"""
-    if lang not in TUTORIAL_TRANSLATIONS:
-        lang = 'en'
-    return TUTORIAL_TRANSLATIONS[lang]
-
 def get_care(disease_name, lang='en'):
     """Get dynamic care instructions for a disease"""
-    # Clean disease name for lookup
-    disease_key = None
-    for key in CARE_DATA.keys():
-        if disease_name in key or key in disease_name:
-            disease_key = key
-            break
+    # First try direct mapping
+    mapped_key = DISEASE_NAME_MAPPING.get(disease_name)
+    
+    if mapped_key and mapped_key in CARE_DATA:
+        disease_key = mapped_key
+    else:
+        # Try to find by partial match
+        disease_key = None
+        for key in CARE_DATA.keys():
+            if disease_name in key or key in disease_name:
+                disease_key = key
+                break
     
     if not disease_key:
         return {

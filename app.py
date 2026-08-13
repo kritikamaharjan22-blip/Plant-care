@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 
 # Import our modules
 from garbage_collection import clear_memory, print_memory, cleanup_variables
-from translation import get_care, get_language_name, CARE_DATA, get_ui_text, get_tutorial_steps
+from translation import get_care, get_language_name, CARE_DATA, get_ui_text
 
 app = Flask(__name__)
 app.secret_key = 'plant_care_secret'
@@ -348,6 +348,7 @@ HTML_TEMPLATE = '''
         .care-section-block ul { padding-left: 20px; margin: 0; }
         .care-section-block ul li { margin-bottom: 4px; color: #333; font-size: 14px; line-height: 1.5; }
         .care-section-block p { margin: 0; color: #333; font-size: 14px; line-height: 1.5; }
+        .care-section-block strong { color: #2e7d32; }
         .care-section-block.notice { border-left-color: #ff9800; background: #fff3e0; }
 
         .footer { text-align: center; margin-top: 18px; color: #a5d6a7; font-size: 12px; }
@@ -495,7 +496,6 @@ HTML_TEMPLATE = '''
         // UI TRANSLATIONS FROM BACKEND
         // ============================================
         const UI_TEXT = {{ ui_text | tojson | default('{}') }};
-        const TUTORIAL_STEPS = {{ tutorial_steps | tojson | default('[]') }};
         const DISEASE_TRANSLATIONS = {{ disease_translations | tojson | default('{}') }};
 
         console.log('🔍 UI_TEXT loaded:', UI_TEXT);
@@ -633,11 +633,9 @@ HTML_TEMPLATE = '''
             if (el.loadingText) el.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
             if (el.footerText) el.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
             
-            // Tutorial button - ONLY the text, NO emoji (emoji is in HTML)
+            // Tutorial button
             if (el.tutorialLabel) {
-                // Remove any emoji from the translation text
                 let tutorialText = t.tutorial_btn || 'Tutorial';
-                // Remove emoji if present (🎓)
                 tutorialText = tutorialText.replace(/[🎓]/g, '').trim();
                 el.tutorialLabel.textContent = tutorialText || 'Tutorial';
             }
@@ -676,7 +674,7 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // DISPLAY RESULT
+        // DISPLAY RESULT - Updated with new format
         // ============================================
         function displayResult(data) {
             const isHealthy = data.class.includes('Healthy');
@@ -722,28 +720,41 @@ HTML_TEMPLATE = '''
                 
                 let html = '';
                 
-                if (data.care.immediate_actions && data.care.immediate_actions.length > 0) {
-                    html += `
-                        <div class="care-section-block">
-                            <h4>${t.what_to_do || 'What to do now'}</h4>
-                            <ul>
-                                ${data.care.immediate_actions.map(a => `<li>${a}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
+                // ============================================
+                // What to do now - Contains Immediate Actions and Treatment Options
+                // ============================================
+                let hasImmediateActions = data.care.immediate_actions && data.care.immediate_actions.length > 0;
+                let hasTreatmentOptions = data.care.treatment_options && data.care.treatment_options.length > 0;
+                
+                if (hasImmediateActions || hasTreatmentOptions) {
+                    html += `<div class="care-section-block"><h4>${t.what_to_do || 'What to do now'}</h4>`;
+                    
+                    // Immediate Actions
+                    if (hasImmediateActions) {
+                        html += `<p><strong>${t.immediate_actions || 'Immediate Actions'}:</strong></p>
+                                 <ul>`;
+                        data.care.immediate_actions.forEach(action => {
+                            html += `<li>${action}</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                    
+                    // Treatment Options
+                    if (hasTreatmentOptions) {
+                        html += `<p><strong>${t.treatment_options || 'Treatment Options'}:</strong></p>
+                                 <ul>`;
+                        data.care.treatment_options.forEach(option => {
+                            html += `<li>${option}</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                    
+                    html += `</div>`;
                 }
                 
-                if (data.care.treatment_options && data.care.treatment_options.length > 0) {
-                    html += `
-                        <div class="care-section-block">
-                            <h4>${t.treatment_options || 'Treatment options'}</h4>
-                            <ul>
-                                ${data.care.treatment_options.map(a => `<li>${a}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-                
+                // ============================================
+                // Prevention
+                // ============================================
                 if (data.care.prevention) {
                     html += `
                         <div class="care-section-block">
@@ -753,6 +764,9 @@ HTML_TEMPLATE = '''
                     `;
                 }
                 
+                // ============================================
+                // Safety warnings
+                // ============================================
                 if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
                     html += `
                         <div class="care-section-block">
@@ -764,6 +778,9 @@ HTML_TEMPLATE = '''
                     `;
                 }
                 
+                // ============================================
+                // Notice
+                // ============================================
                 if (data.care.notice) {
                     html += `
                         <div class="care-section-block notice">
@@ -962,11 +979,9 @@ HTML_TEMPLATE = '''
 def index():
     """Serve the main page with all translations"""
     ui_text = get_ui_text('en')
-    tutorial_steps = get_tutorial_steps('en')
     return render_template_string(
         HTML_TEMPLATE,
         ui_text=ui_text,
-        tutorial_steps=tutorial_steps,
         current_lang='en',
         disease_translations=DISEASE_TRANSLATIONS
     )
