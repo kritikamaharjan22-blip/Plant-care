@@ -123,7 +123,7 @@ HTML_TEMPLATE = '''
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.30);
+            background: rgba(0, 0, 0, 0.50);
             z-index: 0;
         }
 
@@ -131,20 +131,22 @@ HTML_TEMPLATE = '''
         .content-wrapper {
             position: relative;
             z-index: 1;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 28px;
             padding: 0.5rem 2rem 2rem 2rem;
             max-width: 750px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 2px solid rgba(255, 255, 255, 0.15);
         }
 
         /* ===== HEADER ===== */
         .app-header {
-            background: #1a3a2b;
+            background: rgba(26, 58, 43, 0.85);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             padding: 1.2rem 1.5rem;
             display: flex;
             align-items: center;
@@ -153,37 +155,46 @@ HTML_TEMPLATE = '''
             margin: 0 -2rem 0 -2rem;
             padding-left: 2rem;
             padding-right: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            border-bottom: 2px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.25);
+            border-bottom: 2px solid rgba(255,255,255,0.08);
         }
 
         .app-title {
-            color: #f0f7ec;
-            font-size: 2.8rem;
+            color: #ffffff;
+            font-size: 3.4rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 60px rgba(67, 160, 71, 0.2);
             text-align: center;
+            padding: 0.1rem 1.5rem;
+            border-radius: 0px;
+            border: none;
+            background: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+            -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 30px rgba(67, 160, 71, 0.3), 0 2px 20px rgba(0,0,0,0.5);
         }
 
         /* ===== SUBTITLE ===== */
         .main-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: #ffffff;
+            color: #e8f5e9;
             text-align: center;
-            margin: 0.6rem 0 0.2rem 0;
-            text-shadow: 0 2px 15px rgba(0,0,0,0.4);
+            margin: 0.8rem 0 0.3rem 0;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 30px rgba(0,0,0,0.3);
             position: relative;
             z-index: 1;
         }
         .main-title .sub {
             font-size: 1rem;
             font-weight: 400;
-            color: #e0f0e0;
+            color: #d4e8cf;
             display: block;
             letter-spacing: 1px;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
         }
 
         /* ===== BUTTONS BELOW SUBTITLE ===== */
@@ -192,7 +203,7 @@ HTML_TEMPLATE = '''
             align-items: center;
             justify-content: center;
             gap: 1rem;
-            padding: 0.6rem 0 0.8rem 0;
+            padding: 0.6rem 0 0.9rem 0;
             border-bottom: 1px solid rgba(255,255,255,0.06);
             margin: 0 -2rem 1rem -2rem;
             padding-left: 2rem;
@@ -200,9 +211,9 @@ HTML_TEMPLATE = '''
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid #6a9a7a;
-            color: #d4e8cf;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(106, 154, 122, 0.7);
+            color: #e8f5e9;
             padding: 0.5rem 1.4rem;
             border-radius: 25px;
             font-size: 0.9rem;
@@ -216,26 +227,30 @@ HTML_TEMPLATE = '''
             min-width: 100px;
             height: 38px;
             letter-spacing: 0.3px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 8px rgba(0,0,0,0.3);
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.18);
             border-color: #8aba8a;
             color: #ffffff;
             transform: scale(1.03);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* ===== CONTAINER ===== */
+        /* ===== CONTAINER (White box - toned down) ===== */
         .container {
-            background: white;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             border-radius: 20px;
             padding: 28px 32px 32px 32px;
             width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
             position: relative;
             z-index: 1;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* ===== PLANT INFO ===== */
@@ -244,7 +259,7 @@ HTML_TEMPLATE = '''
             margin-bottom: 14px;
         }
         .plant-info .info-label {
-            color: #558b2f;
+            color: #2e5a2e;
             font-size: 0.95rem;
             font-weight: 500;
             margin-right: 6px;
@@ -262,21 +277,21 @@ HTML_TEMPLATE = '''
 
         /* ===== UPLOAD AREA ===== */
         #dropZone {
-            border: 2px dashed #a5d6a7;
+            border: 2px dashed #4a8a4a;
             border-radius: 16px;
             padding: 30px 20px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
-            background: #f1f8e9;
+            background: rgba(241, 248, 233, 0.65);
             position: relative;
             z-index: 1;
         }
-        #dropZone:hover { border-color: #43a047; background: #e8f5e9; }
-        #dropZone.dragover { border-color: #2e7d32; background: #c8e6c9; }
+        #dropZone:hover { border-color: #2a7a2a; background: rgba(232, 245, 233, 0.75); }
+        #dropZone.dragover { border-color: #1a6a1a; background: rgba(200, 230, 201, 0.75); }
         #dropZone.has-image { padding: 12px 20px; }
         .upload-icon { font-size: 48px; margin-bottom: 6px; }
-        .hint { color: #81c784; font-size: 14px; margin-top: 4px; }
+        .hint { color: #4a7a4a; font-size: 14px; margin-top: 4px; }
         .btn-upload {
             display: inline-block;
             padding: 10px 28px;
@@ -452,7 +467,13 @@ HTML_TEMPLATE = '''
         .care-section-block strong { color: #2e7d32; }
         .care-section-block.notice { border-left-color: #ff9800; background: #fff3e0; }
 
-        .footer { text-align: center; margin-top: 14px; color: #a5d6a7; font-size: 12px; }
+        .footer { 
+            text-align: center; 
+            margin-top: 14px; 
+            color: #3a6a3a; 
+            font-size: 12px; 
+            font-weight: 500;
+        }
 
         /* Tutorial Modal */
         .tutorial-modal {
@@ -525,7 +546,8 @@ HTML_TEMPLATE = '''
                 flex-wrap: wrap;
             }
             .app-title {
-                font-size: 2rem;
+                font-size: 2.4rem !important;
+                padding: 0.1rem 0.8rem !important;
             }
             .nav-btn {
                 min-width: 80px;
@@ -545,7 +567,7 @@ HTML_TEMPLATE = '''
         }
 
         @media (max-width: 450px) {
-            .app-title { font-size: 1.6rem; }
+            .app-title { font-size: 1.8rem !important; padding: 0.1rem 0.5rem !important; }
             .nav-btn { font-size: 0.7rem; padding: 0.2rem 0.6rem; min-width: 60px; height: 28px; }
             .container { padding: 12px; }
             .upload-icon { font-size: 36px; }
@@ -587,7 +609,7 @@ HTML_TEMPLATE = '''
 
             <div class="upload-area" id="dropZone">
                 <div class="upload-icon" id="uploadIcon">📸</div>
-                <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
+                <p style="color: #2e5a2e; font-weight: 500;" id="uploadText">Upload a leaf image</p>
                 <p class="hint" id="hintText">Drag & drop or click to browse</p>
                 <label class="btn-upload" for="fileInput" id="browseBtn">Choose Image</label>
                 <input type="file" id="fileInput" accept="image/*">
