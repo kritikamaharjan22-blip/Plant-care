@@ -1,4 +1,4 @@
-# app.py - COMPLETE FINAL VERSION WITH gTTS (No credit card needed)
+# app.py - COMPLETE FINAL VERSION WITH BACKGROUND IMAGE
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -88,7 +88,7 @@ DISEASE_TRANSLATIONS = {
 }
 
 # ============================================
-# HTML - COMPLETE FINAL VERSION
+# HTML - COMPLETE FINAL VERSION WITH BACKGROUND IMAGE
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -101,63 +101,111 @@ HTML_TEMPLATE = '''
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            background-image: url('/static/side_panel.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* Dark overlay for the entire page */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.30);
+            z-index: 0;
+        }
+
+        /* ===== CONTENT WRAPPER (Vertical block with blur) ===== */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 0.5rem 2rem 2rem 2rem;
+            max-width: 750px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
         /* ===== HEADER ===== */
         .app-header {
             background: #1a3a2b;
-            padding: 1rem 2.5rem;
+            padding: 1.2rem 1.5rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            border-radius: 16px;
-            max-width: 900px;
-            width: 100%;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            position: relative;
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding-left: 0.5rem;
-        }
-
-        .logo-icon {
-            font-size: 1.8rem;
-            color: #a8d5a2;
+            justify-content: center;
+            border-radius: 16px 16px 0 0;
+            margin: 0 -2rem 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            border-bottom: 2px solid rgba(255,255,255,0.05);
         }
 
         .app-title {
             color: #f0f7ec;
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 2.8rem;
+            font-weight: 800;
             letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-align: center;
         }
 
+        /* ===== SUBTITLE ===== */
+        .main-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+            margin: 0.6rem 0 0.2rem 0;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+        }
+        .main-title .sub {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #e0f0e0;
+            display: block;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        /* ===== BUTTONS BELOW SUBTITLE ===== */
         .header-nav {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
-            padding-right: 0.5rem;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0.6rem 0 0.8rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin: 0 -2rem 1rem -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
         }
 
         .nav-btn {
             background: rgba(255, 255, 255, 0.08);
-            border: 1px solid #4a7a5a;
+            border: 2px solid #6a9a7a;
             color: #d4e8cf;
-            padding: 0.4rem 1.2rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 0.5rem 1.4rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -165,73 +213,29 @@ HTML_TEMPLATE = '''
             align-items: center;
             justify-content: center;
             gap: 0.3rem;
-            min-width: 80px;
-            height: 34px;
+            min-width: 100px;
+            height: 38px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         .nav-btn:hover {
             background: rgba(255, 255, 255, 0.16);
-            border-color: #6a9a7a;
+            border-color: #8aba8a;
             color: #ffffff;
             transform: scale(1.03);
-        }
-
-        .nav-btn i {
-            font-size: 0.9rem;
-            color: #a8d5a2;
-        }
-
-        .nav-btn-tutorial {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid #4a7a5a;
-            color: #d4e8cf;
-        }
-
-        .nav-btn-tutorial:hover {
-            background: rgba(255, 255, 255, 0.16);
-            border-color: #6a9a7a;
-            color: #ffffff;
-        }
-
-        .nav-btn-lang {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid #4a7a5a;
-            color: #d4e8cf;
-        }
-
-        .nav-btn-lang:hover {
-            background: rgba(255, 255, 255, 0.16);
-            border-color: #6a9a7a;
-            color: #ffffff;
-        }
-
-        /* ===== MAIN TITLE ===== */
-        .main-title {
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: #1b5e20;
-            text-align: center;
-            margin-bottom: 4px;
-            letter-spacing: -1px;
-            text-shadow: 0 4px 20px rgba(27, 94, 32, 0.12);
-        }
-        .main-title .sub {
-            font-size: 1rem;
-            font-weight: 400;
-            color: #43a047;
-            display: block;
-            margin-top: 2px;
-            letter-spacing: 1.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         }
 
         /* ===== CONTAINER ===== */
         .container {
             background: white;
-            border-radius: 24px;
-            padding: 30px 35px 35px 35px;
-            max-width: 700px;
+            border-radius: 20px;
+            padding: 28px 32px 32px 32px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
         }
 
         /* ===== PLANT INFO ===== */
@@ -260,7 +264,7 @@ HTML_TEMPLATE = '''
         #dropZone {
             border: 2px dashed #a5d6a7;
             border-radius: 16px;
-            padding: 35px 20px;
+            padding: 30px 20px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
@@ -270,8 +274,8 @@ HTML_TEMPLATE = '''
         }
         #dropZone:hover { border-color: #43a047; background: #e8f5e9; }
         #dropZone.dragover { border-color: #2e7d32; background: #c8e6c9; }
-        #dropZone.has-image { padding: 15px 20px; }
-        .upload-icon { font-size: 56px; margin-bottom: 8px; }
+        #dropZone.has-image { padding: 12px 20px; }
+        .upload-icon { font-size: 48px; margin-bottom: 6px; }
         .hint { color: #81c784; font-size: 14px; margin-top: 4px; }
         .btn-upload {
             display: inline-block;
@@ -280,7 +284,7 @@ HTML_TEMPLATE = '''
             color: white;
             border-radius: 10px;
             cursor: pointer;
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 14px;
             font-weight: 600;
             transition: transform 0.2s;
@@ -292,13 +296,13 @@ HTML_TEMPLATE = '''
         .btn-upload-small {
             padding: 8px 20px;
             font-size: 13px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         #fileInput { display: none; }
         #preview {
             max-width: 100%;
-            max-height: 250px;
-            margin: 10px auto;
+            max-height: 200px;
+            margin: 8px auto;
             border-radius: 12px;
             display: none;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -313,15 +317,15 @@ HTML_TEMPLATE = '''
 
         .remove-image-btn {
             position: absolute;
-            top: 0px;
-            right: 0px;
-            width: 32px;
-            height: 32px;
+            top: -8px;
+            right: -8px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: #f44336;
             color: white;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             display: none;
             align-items: center;
@@ -338,14 +342,14 @@ HTML_TEMPLATE = '''
             display: flex;
         }
 
-        .analyze-wrapper { margin-top: 16px; width: 100%; }
+        .analyze-wrapper { margin-top: 14px; width: 100%; }
         .btn-predict {
             background: linear-gradient(135deg, #43a047, #2e7d32);
             color: white;
             border: none;
-            padding: 14px 40px;
+            padding: 13px 40px;
             border-radius: 12px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
@@ -360,14 +364,14 @@ HTML_TEMPLATE = '''
         }
         .btn-predict:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-        #loading { display: none; text-align: center; padding: 25px; }
-        .spinner { border: 4px solid #e8f5e9; border-top: 4px solid #43a047; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+        #loading { display: none; text-align: center; padding: 20px; }
+        .spinner { border: 4px solid #e8f5e9; border-top: 4px solid #43a047; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { color: #558b2f; font-size: 15px; font-weight: 500; }
+        .loading-text { color: #558b2f; font-size: 14px; font-weight: 500; }
 
         #result {
-            margin-top: 18px;
-            padding: 20px;
+            margin-top: 15px;
+            padding: 18px;
             border-radius: 16px;
             display: none;
             animation: slideDown 0.5s ease-out;
@@ -375,29 +379,30 @@ HTML_TEMPLATE = '''
             z-index: 1;
         }
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-15px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .healthy { background: #e8f5e9; border: 2px solid #43a047; }
         .disease { background: #ffebee; border: 2px solid #e53935; }
-        .result-icon { font-size: 48px; text-align: center; }
-        .result-name { font-size: 22px; font-weight: 700; text-align: center; margin: 8px 0; color: #1b5e20; }
-        .result-confidence { text-align: center; color: #558b2f; font-size: 14px; }
-        .progress-bar { width: 100%; height: 10px; background: #e0e0e0; border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #43a047, #2e7d32); transition: width 0.8s ease-out; border-radius: 5px; }
-        .result-status { text-align: center; margin-top: 12px; font-size: 14px; font-weight: 500; }
+        .result-icon { font-size: 40px; text-align: center; }
+        .result-name { font-size: 20px; font-weight: 700; text-align: center; margin: 6px 0; color: #1b5e20; }
+        .result-confidence { text-align: center; color: #558b2f; font-size: 13px; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #43a047, #2e7d32); transition: width 0.8s ease-out; border-radius: 4px; }
+        .result-status { text-align: center; margin-top: 10px; font-size: 14px; font-weight: 500; }
 
-        .care-section { margin-top: 18px; padding: 16px; background: #f5f5f5; border-radius: 12px; display: none; }
+        .care-section { margin-top: 15px; padding: 14px; background: #f5f5f5; border-radius: 12px; display: none; }
         .care-section.visible { display: block; }
 
         .care-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             color: #2e7d32;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-speech-green {
@@ -406,11 +411,10 @@ HTML_TEMPLATE = '''
             cursor: pointer;
             padding: 4px;
             color: #2E7D32;
-            font-size: 24px;
+            font-size: 22px;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             align-items: center;
-            margin-left: 4px;
         }
 
         .btn-speech-green:hover {
@@ -420,26 +424,35 @@ HTML_TEMPLATE = '''
         .btn-speech-green.speaking {
             color: transparent;
             -webkit-text-stroke: 2.5px #2E7D32;
-            transform: scale(1.25);
+            transform: scale(1.2);
         }
 
-        .translation-badge { display: inline-block; background: #43a047; color: white; font-size: 10px; padding: 2px 10px; border-radius: 12px; margin-left: 4px; font-weight: 600; }
+        .translation-badge {
+            display: inline-block;
+            background: #43a047;
+            color: white;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: auto;
+            font-weight: 600;
+        }
 
         .care-section-block {
-            margin: 10px 0;
-            padding: 12px 14px;
+            margin: 8px 0;
+            padding: 10px 14px;
             border-radius: 10px;
             background: #f9f9f9;
             border-left: 4px solid #43a047;
         }
-        .care-section-block h4 { color: #2e7d32; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+        .care-section-block h4 { color: #2e7d32; margin-bottom: 4px; font-size: 14px; font-weight: 600; }
         .care-section-block ul { padding-left: 20px; margin: 0; }
-        .care-section-block ul li { margin-bottom: 4px; color: #333; font-size: 14px; line-height: 1.5; }
-        .care-section-block p { margin: 0; color: #333; font-size: 14px; line-height: 1.5; }
+        .care-section-block ul li { margin-bottom: 3px; color: #333; font-size: 13px; line-height: 1.5; }
+        .care-section-block p { margin: 0; color: #333; font-size: 13px; line-height: 1.5; }
         .care-section-block strong { color: #2e7d32; }
         .care-section-block.notice { border-left-color: #ff9800; background: #fff3e0; }
 
-        .footer { text-align: center; margin-top: 18px; color: #a5d6a7; font-size: 12px; }
+        .footer { text-align: center; margin-top: 14px; color: #a5d6a7; font-size: 12px; }
 
         /* Tutorial Modal */
         .tutorial-modal {
@@ -459,162 +472,181 @@ HTML_TEMPLATE = '''
             background: white;
             padding: 20px;
             border-radius: 20px;
-            max-width: 800px;
+            max-width: 750px;
             width: 90%;
             position: relative;
         }
         .tutorial-modal-content .close-btn {
             position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 40px;
-            height: 40px;
+            top: -14px;
+            right: -14px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #f44336;
             color: white;
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .tutorial-modal-content .close-btn:hover { background: #d32f2f; }
+        .tutorial-modal-content .close-btn:hover { background: #c62828; }
         .tutorial-modal-content .dummy-video {
             width: 100%;
-            height: 400px;
-            background: linear-gradient(135deg, #2e7d32, #43a047);
-            border-radius: 10px;
+            min-height: 300px;
+            background: linear-gradient(135deg, #1a3a2b, #2a6a3a);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 24px;
+            padding: 2rem;
+            text-align: center;
         }
-        .tutorial-modal-content .dummy-video .big-icon { font-size: 100px; margin-bottom: 20px; }
-        .tutorial-modal-content .dummy-video .lang-label { font-size: 16px; opacity: 0.8; margin-top: 10px; }
+        .tutorial-modal-content .dummy-video .big-icon { font-size: 4rem; margin-bottom: 0.8rem; }
+        .tutorial-modal-content .dummy-video .step-list { font-size: 0.95rem; opacity: 0.85; margin-top: 0.8rem; line-height: 1.8; }
 
         @media (max-width: 650px) {
-            .app-header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.8rem;
-                padding: 1rem 1.2rem;
+            .content-wrapper {
+                padding: 0.5rem 1rem 1rem 1rem;
             }
-            .logo-area {
-                justify-content: center;
-                padding-left: 0;
+            .app-header {
+                margin: 0 -1rem 0 -1rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             .header-nav {
-                justify-content: center;
-                padding-right: 0;
-            }
-            .nav-btn {
-                min-width: 60px;
-                font-size: 0.75rem;
-                padding: 0.3rem 0.8rem;
-                height: 30px;
+                margin: 0 -1rem 0.5rem -1rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                flex-wrap: wrap;
             }
             .app-title {
-                font-size: 1.4rem;
-            }
-            .main-title {
                 font-size: 2rem;
             }
-            .container { padding: 20px; }
+            .nav-btn {
+                min-width: 80px;
+                font-size: 0.8rem;
+                padding: 0.3rem 1rem;
+                height: 32px;
+            }
+            .main-title {
+                font-size: 1rem;
+            }
+            .main-title .sub {
+                font-size: 0.85rem;
+            }
+            .container { padding: 18px; }
             .plant-info .info-label { font-size: 0.85rem; }
             .badge { font-size: 0.85rem; padding: 3px 10px; }
         }
 
         @media (max-width: 450px) {
-            .app-title { font-size: 1.2rem; }
-            .nav-btn { font-size: 0.7rem; padding: 0.2rem 0.6rem; min-width: 50px; height: 26px; }
-            .header-nav { gap: 0.4rem; }
-            .main-title { font-size: 1.6rem; }
-            .main-title .sub { font-size: 0.8rem; }
-            .container { padding: 14px; }
+            .app-title { font-size: 1.6rem; }
+            .nav-btn { font-size: 0.7rem; padding: 0.2rem 0.6rem; min-width: 60px; height: 28px; }
+            .container { padding: 12px; }
+            .upload-icon { font-size: 36px; }
+            .btn-predict { font-size: 15px; padding: 10px 20px; }
         }
     </style>
 </head>
 <body>
-    <!-- ===== HEADER ===== -->
-    <header class="app-header">
-        <div class="logo-area">
-            <span class="logo-icon">🌿</span>
+    <!-- ===== CONTENT WRAPPER (Vertical block with blur) ===== -->
+    <div class="content-wrapper">
+
+        <!-- ===== HEADER ===== -->
+        <header class="app-header">
             <span class="app-title" id="appTitle">Plant Care</span>
+        </header>
+
+        <!-- ===== SUBTITLE ===== -->
+        <div class="main-title">
+            <span class="sub" id="mainSubtitle">Smart Disease Detection for Your Plants</span>
         </div>
+
+        <!-- ===== BUTTONS BELOW SUBTITLE ===== -->
         <div class="header-nav">
-            <button class="nav-btn nav-btn-tutorial" id="tutorialBtn">
+            <button class="nav-btn" id="tutorialBtn">
                 <span id="tutorialLabel">Tutorial</span>
             </button>
-            <button class="nav-btn nav-btn-lang" id="langToggle">
+            <button class="nav-btn" id="langToggle">
                 <span id="langLabel">English ⇄ नेपाली</span>
             </button>
         </div>
-    </header>
 
-    <!-- MAIN TITLE -->
-    <div class="main-title">
-        <span class="sub" id="mainSubtitle">Smart Disease Detection for Your Plants</span>
+        <!-- ===== MAIN CONTAINER ===== -->
+        <div class="container">
+            <div class="plant-info">
+                <span class="info-label" id="plantInfoText">Currently diagnosable plants:</span>
+                <span class="badge badge-rice" id="riceBadge">🌾 Rice</span>
+                <span class="badge badge-potato" id="potatoBadge">🥔 Potato</span>
+            </div>
+
+            <div class="upload-area" id="dropZone">
+                <div class="upload-icon" id="uploadIcon">📸</div>
+                <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
+                <p class="hint" id="hintText">Drag & drop or click to browse</p>
+                <label class="btn-upload" for="fileInput" id="browseBtn">Choose Image</label>
+                <input type="file" id="fileInput" accept="image/*">
+                <div class="image-container">
+                    <img id="preview" alt="Preview">
+                    <button class="remove-image-btn" id="removeImageBtn">✕</button>
+                </div>
+                <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">Choose Another</label>
+            </div>
+
+            <div class="analyze-wrapper">
+                <button class="btn-predict" id="predictBtn" disabled>Analyze Plant</button>
+            </div>
+
+            <div id="loading">
+                <div class="spinner"></div>
+                <p class="loading-text" id="loadingText">Analyzing your plant...</p>
+            </div>
+
+            <div id="result">
+                <div class="result-icon" id="resultIcon">✅</div>
+                <div class="result-name" id="resultName">Healthy Plant</div>
+                <div class="result-confidence" id="resultConfidence">Confidence: 95.0%</div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 95%"></div></div>
+                <div class="result-status" id="resultStatus">Your plant appears healthy!</div>
+                
+                <div class="care-section" id="careSection">
+                    <div class="care-title" id="careTitle">
+                        <span id="careTitleText">Post Care Guidance</span>
+                        <button class="btn-speech-green" id="speechGreenBtn" title="Listen to guidance">🔊</button>
+                        <span class="translation-badge" id="langBadge">EN</span>
+                    </div>
+                    <div id="careSteps"></div>
+                </div>
+            </div>
+
+            <div class="footer" id="footerText">Keep your plants healthy with Plant Care</div>
+        </div>
+
     </div>
 
     <!-- TUTORIAL MODAL -->
     <div class="tutorial-modal" id="tutorialModal">
         <div class="tutorial-modal-content">
             <button class="close-btn" id="tutorialCloseBtn">✕</button>
-            <div id="tutorialVideoContainer"></div>
-        </div>
-    </div>
-
-    <!-- MAIN CONTAINER -->
-    <div class="container">
-        <div class="plant-info">
-            <span class="info-label" id="plantInfoText">Currently diagnosable plants:</span>
-            <span class="badge badge-rice" id="riceBadge">🌾 Rice</span>
-            <span class="badge badge-potato" id="potatoBadge">🥔 Potato</span>
-        </div>
-
-        <div class="upload-area" id="dropZone">
-            <div class="upload-icon" id="uploadIcon">📸</div>
-            <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
-            <p class="hint" id="hintText">Drag & drop or click to browse</p>
-            <label class="btn-upload" for="fileInput" id="browseBtn">Choose Image</label>
-            <input type="file" id="fileInput" accept="image/*">
-            <div class="image-container">
-                <img id="preview" alt="Preview">
-                <button class="remove-image-btn" id="removeImageBtn">✕</button>
-            </div>
-            <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">Choose Another Image</label>
-        </div>
-
-        <div class="analyze-wrapper">
-            <button class="btn-predict" id="predictBtn" disabled>Analyze Plant</button>
-        </div>
-
-        <div id="loading">
-            <div class="spinner"></div>
-            <p class="loading-text" id="loadingText">Analyzing your plant...</p>
-        </div>
-
-        <div id="result">
-            <div class="result-icon" id="resultIcon">✅</div>
-            <div class="result-name" id="resultName">Healthy Plant</div>
-            <div class="result-confidence" id="resultConfidence">Confidence: 95.0%</div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 95%"></div></div>
-            <div class="result-status" id="resultStatus">Your plant appears healthy!</div>
-
-            <div class="care-section" id="careSection">
-                <div class="care-title" id="careTitle">
-                    <span id="careTitleText">Post Care Guidance</span>
-                    <button class="btn-speech-green" id="speechGreenBtn" title="Listen to guidance">🔊</button>
-                    <span class="translation-badge" id="langBadge">EN</span>
+            <div id="tutorialVideoContainer">
+                <div class="dummy-video">
+                    <div class="big-icon">🌿</div>
+                    <div style="font-size: 1.3rem; font-weight: 600;">Plant Care Tutorial</div>
+                    <div style="font-size: 1rem; margin-top: 0.5rem;">How to diagnose your plant diseases</div>
+                    <div class="step-list">
+                        Step 1: Upload a clear leaf image<br>
+                        Step 2: Click the Analyze button<br>
+                        Step 3: View results and care guidance<br>
+                        Step 4: Use the speaker button to listen
+                    </div>
                 </div>
-                <div id="careSteps"></div>
             </div>
         </div>
-
-        <div class="footer" id="footerText">Keep your plants healthy with Plant Care</div>
     </div>
 
     <script>
@@ -691,23 +723,23 @@ HTML_TEMPLATE = '''
                 stopSpeaking();
                 return;
             }
-
+            
             const audio = new Audio('data:audio/mp3;base64,' + base64Data);
-
+            
             audio.onplay = () => {
                 isSpeaking = true;
                 if (el.speechGreenBtn) {
                     el.speechGreenBtn.classList.add('speaking');
                 }
             };
-
+            
             audio.onended = () => {
                 isSpeaking = false;
                 if (el.speechGreenBtn) {
                     el.speechGreenBtn.classList.remove('speaking');
                 }
             };
-
+            
             audio.play();
         }
 
@@ -763,7 +795,7 @@ HTML_TEMPLATE = '''
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
             stopSpeaking();
-
+            
             el.uploadIcon.style.display = 'block';
             el.uploadText.style.display = 'block';
             el.hintText.style.display = 'block';
@@ -790,48 +822,48 @@ HTML_TEMPLATE = '''
 
         function applyTranslations(lang) {
             const t = UI_TEXT;
-
+            
             if (!t || typeof t !== 'object') {
                 console.error('UI_TEXT not available');
                 return;
             }
-
+            
             console.log('Applying translations for:', lang);
-
+            
             if (el.appTitle) {
                 el.appTitle.textContent = lang === 'en' ? 'Plant Care' : 'प्लान्ट केयर';
             }
             if (el.mainSubtitle) {
                 el.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
             }
-
+            
             if (el.plantInfoText) el.plantInfoText.textContent = t.diagnosable_plants || 'Currently diagnosable plants:';
-
+            
             if (el.riceBadge) {
                 el.riceBadge.textContent = lang === 'en' ? '🌾 Rice' : '🌾 चामल';
             }
             if (el.potatoBadge) {
                 el.potatoBadge.textContent = lang === 'en' ? '🥔 Potato' : '🥔 आलु';
             }
-
+            
             if (el.uploadText) el.uploadText.textContent = t.upload_title || 'Upload a leaf image';
             if (el.hintText) el.hintText.textContent = t.upload_hint || 'Drag & drop or click to browse';
             if (el.browseBtn) el.browseBtn.textContent = t.browse_btn || 'Choose Image';
-            if (el.chooseAnotherBtn) el.chooseAnotherBtn.textContent = t.choose_another_btn || 'Choose Another Image';
+            if (el.chooseAnotherBtn) el.chooseAnotherBtn.textContent = t.choose_another_btn || 'Choose Another';
             if (el.predictBtn) el.predictBtn.textContent = t.analyze_btn || 'Analyze Plant';
             if (el.loadingText) el.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
             if (el.footerText) el.footerText.textContent = t.footer || 'Keep your plants healthy with Plant Care';
-
+            
             if (el.tutorialLabel) {
                 let tutorialText = t.tutorial_btn || 'Tutorial';
                 tutorialText = tutorialText.replace(/[🎓]/g, '').trim();
                 el.tutorialLabel.textContent = tutorialText || 'Tutorial';
             }
-
+            
             if (el.langLabel) {
                 el.langLabel.textContent = lang === 'en' ? 'English ⇄ नेपाली' : 'नेपाली ⇄ अंग्रेजी';
             }
-
+            
             if (diseaseData) {
                 fetch(`/api/care/${encodeURIComponent(diseaseData.class)}?lang=${lang}`)
                     .then(res => res.json())
@@ -845,7 +877,7 @@ HTML_TEMPLATE = '''
                         displayResult(diseaseData);
                     });
             }
-
+            
             if (el.careTitleText) {
                 const titleText = lang === 'en' ? (t.care_title || 'Post Care Guidance') : (t.care_title || 'पश्चात् सेवा मार्गदर्शन');
                 el.careTitleText.textContent = titleText;
@@ -853,7 +885,7 @@ HTML_TEMPLATE = '''
             if (el.langBadge) {
                 el.langBadge.textContent = lang === 'en' ? 'EN' : 'ने';
             }
-
+            
             currentLang = lang;
         }
 
@@ -864,22 +896,22 @@ HTML_TEMPLATE = '''
             const isHealthy = data.class.includes('Healthy');
             const t = UI_TEXT;
             const lang = currentLang;
-
+            
             let displayName = data.class;
             if (DISEASE_TRANSLATIONS[lang] && DISEASE_TRANSLATIONS[lang][data.class]) {
                 displayName = DISEASE_TRANSLATIONS[lang][data.class];
             } else {
                 displayName = data.class.replace(/_/g, ' ');
             }
-
+            
             el.resultDiv.className = isHealthy ? 'healthy' : 'disease';
-
+            
             let emoji = isHealthy ? '✅' : '⚠️';
             let statusText = isHealthy ? (t.resultHealthy || 'Your plant appears healthy!') : (t.resultDisease || 'Disease detected!');
-
+            
             el.resultIcon.textContent = emoji;
             el.resultName.textContent = displayName;
-
+            
             let confidenceText = data.confidence.toFixed(2);
             let confidenceLabel = lang === 'en' ? 'Confidence' : 'विश्वसनीयता';
             if (lang === 'ne') {
@@ -888,27 +920,27 @@ HTML_TEMPLATE = '''
             } else {
                 el.resultConfidence.textContent = `${confidenceLabel}: ${confidenceText}%`;
             }
-
+            
             el.progressFill.style.width = `${data.confidence}%`;
             el.resultStatus.textContent = statusText;
             el.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
-
+            
             if (data.care) {
                 el.careSection.classList.add('visible');
-
+                
                 const titleText = lang === 'en' ? (t.care_title || 'Post Care Guidance') : (t.care_title || 'पश्चात् सेवा मार्गदर्शन');
                 el.careTitleText.textContent = titleText;
                 const badge = lang === 'en' ? 'EN' : 'ने';
                 el.langBadge.textContent = badge;
-
+                
                 let html = '';
-
+                
                 let hasImmediateActions = data.care.immediate_actions && data.care.immediate_actions.length > 0;
                 let hasTreatmentOptions = data.care.treatment_options && data.care.treatment_options.length > 0;
-
+                
                 if (hasImmediateActions || hasTreatmentOptions) {
                     html += `<div class="care-section-block"><h4>${t.what_to_do || 'What to do now'}</h4>`;
-
+                    
                     if (hasImmediateActions) {
                         html += `<p><strong>${t.immediate_actions || 'Immediate Actions'}:</strong></p>
                                  <ul>`;
@@ -917,7 +949,7 @@ HTML_TEMPLATE = '''
                         });
                         html += `</ul>`;
                     }
-
+                    
                     if (hasTreatmentOptions) {
                         html += `<p><strong>${t.treatment_options || 'Treatment Options'}:</strong></p>
                                  <ul>`;
@@ -926,10 +958,10 @@ HTML_TEMPLATE = '''
                         });
                         html += `</ul>`;
                     }
-
+                    
                     html += `</div>`;
                 }
-
+                
                 if (data.care.prevention) {
                     html += `
                         <div class="care-section-block">
@@ -938,7 +970,7 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-
+                
                 if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
                     html += `
                         <div class="care-section-block">
@@ -949,7 +981,7 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-
+                
                 if (data.care.notice) {
                     html += `
                         <div class="care-section-block notice">
@@ -958,12 +990,12 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-
+                
                 el.careSteps.innerHTML = html;
             } else {
                 el.careSection.classList.remove('visible');
             }
-
+            
             el.resultDiv.style.display = 'block';
         }
 
@@ -975,7 +1007,7 @@ HTML_TEMPLATE = '''
             if (currentLang === 'en') {
                 container.innerHTML = `
                     <div class="dummy-video">
-                        <div class="big-icon">🎓</div>
+                        <div class="big-icon">🌿</div>
                         <div>Plant Care Tutorial</div>
                         <div style="font-size:18px; margin-top:10px;">How to diagnose your plant diseases</div>
                         <div class="lang-label">English Tutorial</div>
@@ -989,7 +1021,7 @@ HTML_TEMPLATE = '''
             } else {
                 container.innerHTML = `
                     <div class="dummy-video">
-                        <div class="big-icon">🎓</div>
+                        <div class="big-icon">🌿</div>
                         <div>प्लान्ट केयर ट्यूटोरियल</div>
                         <div style="font-size:18px; margin-top:10px;">आफ्नो बिरुवाको रोग कसरी पत्ता लगाउने</div>
                         <div class="lang-label">नेपाली ट्यूटोरियल</div>
@@ -1018,7 +1050,7 @@ HTML_TEMPLATE = '''
                 el.resultDiv.style.display = 'none';
                 el.careSection.classList.remove('visible');
                 diseaseData = null;
-
+                
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     el.preview.src = e.target.result;
@@ -1073,20 +1105,20 @@ HTML_TEMPLATE = '''
         // ============================================
         el.predictBtn.addEventListener('click', async function() {
             if (!selectedFile) return;
-
+            
             const formData = new FormData();
             formData.append('file', selectedFile);
-
+            
             this.disabled = true;
             el.loadingDiv.style.display = 'block';
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
-
+            
             try {
                 const response = await fetch('/api/predict', { method: 'POST', body: formData });
                 const data = await response.json();
                 el.loadingDiv.style.display = 'none';
-
+                
                 if (data.success) {
                     diseaseData = data;
                     const careResponse = await fetch(`/api/care/${encodeURIComponent(data.class)}?lang=${currentLang}`);
@@ -1110,7 +1142,7 @@ HTML_TEMPLATE = '''
                 el.resultName.textContent = 'Connection Error';
                 el.resultStatus.textContent = error.message;
             }
-
+            
             this.disabled = false;
         });
 
