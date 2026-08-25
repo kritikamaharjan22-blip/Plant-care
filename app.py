@@ -35,7 +35,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # ============================================
 # LOAD MODEL
 # ============================================
-print("\n🌿 Loading Plant Care...")
+print("\nLoading Plant Care...")
 print_memory()
 
 model = None
@@ -43,26 +43,26 @@ class_names = []
 
 try:
     model = load_model('model/plant_care_model.h5')
-    print("✅ Model loaded")
+    print("Model loaded")
 except:
     try:
         model = load_model('plant_care_model.h5')
-        print("✅ Model loaded from root")
+        print("Model loaded from root")
     except:
-        print("❌ Model not found! Run train_model.py first")
+        print("Model not found! Run train_model.py first")
         exit()
 
 try:
     with open('model/class_names.json', 'r') as f:
         class_names = json.load(f)
-    print(f"✅ {len(class_names)} classes loaded")
+    print(f"{len(class_names)} classes loaded")
 except:
     try:
         with open('class_names.json', 'r') as f:
             class_names = json.load(f)
-        print(f"✅ {len(class_names)} classes loaded from root")
+        print(f"{len(class_names)} classes loaded from root")
     except:
-        print("❌ Class names not found")
+        print("Class names not found")
         exit()
 
 # Disease name translations
@@ -88,7 +88,7 @@ DISEASE_TRANSLATIONS = {
 }
 
 # ============================================
-# HTML - COMPLETE FINAL VERSION (Speaker moved)
+# HTML - COMPLETE FINAL VERSION
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -96,7 +96,7 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 Plant Care</title>
+    <title>Plant Care</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -105,110 +105,158 @@ HTML_TEMPLATE = '''
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             padding: 20px;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            background: #1a3a2b;
+            padding: 1rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             position: relative;
         }
-        
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+            color: #a8d5a2;
+        }
+
+        .app-title {
+            color: #f0f7ec;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding-right: 0.5rem;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #4a7a5a;
+            color: #d4e8cf;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            min-width: 80px;
+            height: 34px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: #6a9a7a;
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        .nav-btn i {
+            font-size: 0.9rem;
+            color: #a8d5a2;
+        }
+
+        .nav-btn-tutorial {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #4a7a5a;
+            color: #d4e8cf;
+        }
+
+        .nav-btn-tutorial:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: #6a9a7a;
+            color: #ffffff;
+        }
+
+        .nav-btn-lang {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #4a7a5a;
+            color: #d4e8cf;
+        }
+
+        .nav-btn-lang:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: #6a9a7a;
+            color: #ffffff;
+        }
+
+        /* ===== MAIN TITLE ===== */
         .main-title {
-            font-size: 56px;
+            font-size: 2.8rem;
             font-weight: 800;
             color: #1b5e20;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             letter-spacing: -1px;
-            text-shadow: 0 4px 20px rgba(27, 94, 32, 0.15);
-            position: relative;
-            z-index: 1;
+            text-shadow: 0 4px 20px rgba(27, 94, 32, 0.12);
         }
-        .main-title .leaf { font-size: 48px; }
         .main-title .sub {
-            font-size: 18px;
+            font-size: 1rem;
             font-weight: 400;
             color: #43a047;
             display: block;
-            margin-top: 4px;
-            letter-spacing: 2px;
+            margin-top: 2px;
+            letter-spacing: 1.5px;
         }
 
+        /* ===== CONTAINER ===== */
         .container {
             background: white;
             border-radius: 24px;
-            padding: 35px 40px 40px 40px;
+            padding: 30px 35px 35px 35px;
             max-width: 700px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
         }
 
-        .header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .header .btn-sm {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .header .btn-sm:hover { transform: scale(1.05); }
-        .header .btn-sm .emoji { font-size: 20px; }
-        
-        .btn-tutorial { background: #ff9800; color: white; }
-        
-        .lang-toggle {
-            background: #e8f5e9;
-            padding: 8px 16px;
-            border-radius: 25px;
-            border: 2px solid #a5d6a7;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
-            color: #2e7d32;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            z-index: 100;
-        }
-        .lang-toggle:hover { background: #c8e6c9; transform: scale(1.05); }
-
+        /* ===== PLANT INFO ===== */
         .plant-info {
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
         .plant-info .info-label {
             color: #558b2f;
-            font-size: 13px;
+            font-size: 0.95rem;
             font-weight: 500;
-            margin-right: 8px;
+            margin-right: 6px;
         }
-        .badge { 
-            padding: 4px 16px; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            font-weight: 600; 
+        .badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
             display: inline-block;
-            margin: 0 4px;
+            margin: 0 3px;
         }
         .badge-rice { background: #fef3c7; color: #92400e; }
         .badge-potato { background: #fde8e8; color: #9b2c2c; }
 
+        /* ===== UPLOAD AREA ===== */
         #dropZone {
             border: 2px dashed #a5d6a7;
             border-radius: 16px;
@@ -236,6 +284,7 @@ HTML_TEMPLATE = '''
             font-size: 14px;
             font-weight: 600;
             transition: transform 0.2s;
+            border: none;
             position: relative;
             z-index: 1;
         }
@@ -255,13 +304,13 @@ HTML_TEMPLATE = '''
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         #preview.show { display: block; }
-        
+
         .image-container {
             text-align: center;
             width: 100%;
             position: relative;
         }
-        
+
         .remove-image-btn {
             position: absolute;
             top: 0px;
@@ -305,8 +354,8 @@ HTML_TEMPLATE = '''
             z-index: 1;
             box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
         }
-        .btn-predict:hover:not(:disabled) { 
-            transform: scale(1.02); 
+        .btn-predict:hover:not(:disabled) {
+            transform: scale(1.02);
             box-shadow: 0 6px 25px rgba(46,125,50,0.4);
         }
         .btn-predict:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
@@ -341,17 +390,16 @@ HTML_TEMPLATE = '''
         .care-section { margin-top: 18px; padding: 16px; background: #f5f5f5; border-radius: 12px; display: none; }
         .care-section.visible { display: block; }
 
-        /* --- NEW GREEN SPEAKER CSS START --- */
-        .care-title { 
-            font-size: 18px; 
-            font-weight: 700; 
-            color: #2e7d32; 
-            margin-bottom: 10px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
+        .care-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
+
         .btn-speech-green {
             background: transparent;
             border: none;
@@ -364,21 +412,19 @@ HTML_TEMPLATE = '''
             align-items: center;
             margin-left: 4px;
         }
-        
+
         .btn-speech-green:hover {
             transform: scale(1.1);
         }
 
-        /* Active State (Outlined + Bigger) */
         .btn-speech-green.speaking {
             color: transparent;
             -webkit-text-stroke: 2.5px #2E7D32;
             transform: scale(1.25);
         }
-        /* --- NEW GREEN SPEAKER CSS END --- */
 
         .translation-badge { display: inline-block; background: #43a047; color: white; font-size: 10px; padding: 2px 10px; border-radius: 12px; margin-left: 4px; font-weight: 600; }
-        
+
         .care-section-block {
             margin: 10px 0;
             padding: 12px 14px;
@@ -449,25 +495,67 @@ HTML_TEMPLATE = '''
         .tutorial-modal-content .dummy-video .big-icon { font-size: 100px; margin-bottom: 20px; }
         .tutorial-modal-content .dummy-video .lang-label { font-size: 16px; opacity: 0.8; margin-top: 10px; }
 
-        @media (max-width: 600px) {
-            .main-title { font-size: 32px; }
-            .main-title .leaf { font-size: 30px; }
-            .main-title .sub { font-size: 14px; }
+        @media (max-width: 650px) {
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+                padding: 1rem 1.2rem;
+            }
+            .logo-area {
+                justify-content: center;
+                padding-left: 0;
+            }
+            .header-nav {
+                justify-content: center;
+                padding-right: 0;
+            }
+            .nav-btn {
+                min-width: 60px;
+                font-size: 0.75rem;
+                padding: 0.3rem 0.8rem;
+                height: 30px;
+            }
+            .app-title {
+                font-size: 1.4rem;
+            }
+            .main-title {
+                font-size: 2rem;
+            }
             .container { padding: 20px; }
-            .header { gap: 8px; }
-            .header .btn-sm { font-size: 12px; padding: 6px 12px; }
-            .header .btn-sm .emoji { font-size: 16px; }
-            .lang-toggle { font-size: 12px; padding: 6px 12px; }
-            .tutorial-modal-content .dummy-video { height: 250px; font-size: 18px; }
-            .tutorial-modal-content .dummy-video .big-icon { font-size: 60px; }
-            .remove-image-btn { width: 28px; height: 28px; font-size: 16px; }
+            .plant-info .info-label { font-size: 0.85rem; }
+            .badge { font-size: 0.85rem; padding: 3px 10px; }
+        }
+
+        @media (max-width: 450px) {
+            .app-title { font-size: 1.2rem; }
+            .nav-btn { font-size: 0.7rem; padding: 0.2rem 0.6rem; min-width: 50px; height: 26px; }
+            .header-nav { gap: 0.4rem; }
+            .main-title { font-size: 1.6rem; }
+            .main-title .sub { font-size: 0.8rem; }
+            .container { padding: 14px; }
         }
     </style>
 </head>
 <body>
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+        <div class="logo-area">
+            <span class="logo-icon">🌿</span>
+            <span class="app-title" id="appTitle">Plant Care</span>
+        </div>
+        <div class="header-nav">
+            <button class="nav-btn nav-btn-tutorial" id="tutorialBtn">
+                <span id="tutorialLabel">Tutorial</span>
+            </button>
+            <button class="nav-btn nav-btn-lang" id="langToggle">
+                <span id="langLabel">English ⇄ नेपाली</span>
+            </button>
+        </div>
+    </header>
+
     <!-- MAIN TITLE -->
     <div class="main-title">
-        <span class="leaf">🌿</span> <span id="appTitle">Plant Care</span> <span class="leaf">🌿</span>
         <span class="sub" id="mainSubtitle">Smart Disease Detection for Your Plants</span>
     </div>
 
@@ -481,15 +569,6 @@ HTML_TEMPLATE = '''
 
     <!-- MAIN CONTAINER -->
     <div class="container">
-        <div class="header">
-            <button class="btn-sm btn-tutorial" id="tutorialBtn">
-                <span class="emoji">🎓</span> <span id="tutorialLabel">Tutorial</span>
-            </button>
-            <button class="lang-toggle" id="langToggle">
-                <span id="langLabel">English ⇄ नेपाली</span>
-            </button>
-        </div>
-
         <div class="plant-info">
             <span class="info-label" id="plantInfoText">Currently diagnosable plants:</span>
             <span class="badge badge-rice" id="riceBadge">🌾 Rice</span>
@@ -499,18 +578,18 @@ HTML_TEMPLATE = '''
         <div class="upload-area" id="dropZone">
             <div class="upload-icon" id="uploadIcon">📸</div>
             <p style="color: #2e7d32; font-weight: 500;" id="uploadText">Upload a leaf image</p>
-            <p class="hint" id="hintText">Drag &amp; drop or click to browse</p>
-            <label class="btn-upload" for="fileInput" id="browseBtn">📁 Choose Image</label>
+            <p class="hint" id="hintText">Drag & drop or click to browse</p>
+            <label class="btn-upload" for="fileInput" id="browseBtn">Choose Image</label>
             <input type="file" id="fileInput" accept="image/*">
             <div class="image-container">
                 <img id="preview" alt="Preview">
                 <button class="remove-image-btn" id="removeImageBtn">✕</button>
             </div>
-            <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">📁 Choose Another Image</label>
+            <label class="btn-upload btn-upload-small" for="fileInput" id="chooseAnotherBtn" style="display: none;">Choose Another Image</label>
         </div>
 
         <div class="analyze-wrapper">
-            <button class="btn-predict" id="predictBtn" disabled>🔍 Analyze Plant</button>
+            <button class="btn-predict" id="predictBtn" disabled>Analyze Plant</button>
         </div>
 
         <div id="loading">
@@ -523,12 +602,11 @@ HTML_TEMPLATE = '''
             <div class="result-name" id="resultName">Healthy Plant</div>
             <div class="result-confidence" id="resultConfidence">Confidence: 95.0%</div>
             <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 95%"></div></div>
-            <div class="result-status" id="resultStatus">🌿 Your plant appears healthy!</div>
-            
+            <div class="result-status" id="resultStatus">Your plant appears healthy!</div>
+
             <div class="care-section" id="careSection">
                 <div class="care-title" id="careTitle">
-                    <span id="careTitleText">📋 Post Care Guidance</span>
-                    <!-- GREEN SPEAKER ICON ADDED HERE -->
+                    <span id="careTitleText">Post Care Guidance</span>
                     <button class="btn-speech-green" id="speechGreenBtn" title="Listen to guidance">🔊</button>
                     <span class="translation-badge" id="langBadge">EN</span>
                 </div>
@@ -536,7 +614,7 @@ HTML_TEMPLATE = '''
             </div>
         </div>
 
-        <div class="footer" id="footerText">🌱 Keep your plants healthy with Plant Care</div>
+        <div class="footer" id="footerText">Keep your plants healthy with Plant Care</div>
     </div>
 
     <script>
@@ -602,44 +680,39 @@ HTML_TEMPLATE = '''
             tutorialModal: document.getElementById('tutorialModal'),
             tutorialCloseBtn: document.getElementById('tutorialCloseBtn'),
             tutorialVideoContainer: document.getElementById('tutorialVideoContainer'),
-            speechGreenBtn: document.getElementById('speechGreenBtn') // NEW GREEN BTN
+            speechGreenBtn: document.getElementById('speechGreenBtn')
         };
 
         // ============================================
         // PLAY AUDIO FROM BASE64 (gTTS version)
         // ============================================
         function playAudioFromBase64(base64Data) {
-            // If it's already speaking, stop it
             if (isSpeaking) {
                 stopSpeaking();
                 return;
             }
-            
-            // Create an audio player from the Base64 data
+
             const audio = new Audio('data:audio/mp3;base64,' + base64Data);
-            
-            // When it starts playing
+
             audio.onplay = () => {
                 isSpeaking = true;
                 if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.add('speaking'); // Makes it outlined and bigger
+                    el.speechGreenBtn.classList.add('speaking');
                 }
             };
-            
-            // When it finishes playing
+
             audio.onended = () => {
                 isSpeaking = false;
                 if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.remove('speaking'); // Back to solid green
+                    el.speechGreenBtn.classList.remove('speaking');
                 }
             };
-            
-            // Play the audio!
+
             audio.play();
         }
 
         // ============================================
-        // READ CARE INSTRUCTIONS (UPDATED FOR gTTS)
+        // READ CARE INSTRUCTIONS
         // ============================================
         function readCareInstructions() {
             if (!diseaseData) {
@@ -652,12 +725,11 @@ HTML_TEMPLATE = '''
                 return;
             }
 
-            // Ask the backend for the audio
             fetch(`/api/speech_text?lang=${currentLang}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.audio_base64) {
-                        playAudioFromBase64(data.audio_base64); // Play the audio!
+                        playAudioFromBase64(data.audio_base64);
                     } else {
                         alert(currentLang === 'en' ? 'Error generating audio' : 'अडियो उत्पन्न गर्न त्रुटि');
                     }
@@ -671,8 +743,6 @@ HTML_TEMPLATE = '''
         // STOP SPEAKING
         // ============================================
         function stopSpeaking() {
-            // Since gTTS plays like a normal song, we just pause the audio elements
-            // We loop through all audios and pause them
             document.querySelectorAll('audio').forEach(audio => audio.pause());
             isSpeaking = false;
             if (el.speechGreenBtn) {
@@ -693,8 +763,7 @@ HTML_TEMPLATE = '''
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
             stopSpeaking();
-            
-            // Reset upload area
+
             el.uploadIcon.style.display = 'block';
             el.uploadText.style.display = 'block';
             el.hintText.style.display = 'block';
@@ -721,55 +790,48 @@ HTML_TEMPLATE = '''
 
         function applyTranslations(lang) {
             const t = UI_TEXT;
-            
+
             if (!t || typeof t !== 'object') {
-                console.error('❌ UI_TEXT not available');
+                console.error('UI_TEXT not available');
                 return;
             }
-            
-            console.log('🔄 Applying translations for:', lang);
-            
-            // App title
+
+            console.log('Applying translations for:', lang);
+
             if (el.appTitle) {
                 el.appTitle.textContent = lang === 'en' ? 'Plant Care' : 'प्लान्ट केयर';
             }
             if (el.mainSubtitle) {
                 el.mainSubtitle.textContent = t.app_subtitle || 'Smart Disease Detection for Your Plants';
             }
-            
-            // Plant info
+
             if (el.plantInfoText) el.plantInfoText.textContent = t.diagnosable_plants || 'Currently diagnosable plants:';
-            
-            // Badges
+
             if (el.riceBadge) {
                 el.riceBadge.textContent = lang === 'en' ? '🌾 Rice' : '🌾 चामल';
             }
             if (el.potatoBadge) {
                 el.potatoBadge.textContent = lang === 'en' ? '🥔 Potato' : '🥔 आलु';
             }
-            
-            // Upload area
+
             if (el.uploadText) el.uploadText.textContent = t.upload_title || 'Upload a leaf image';
             if (el.hintText) el.hintText.textContent = t.upload_hint || 'Drag & drop or click to browse';
-            if (el.browseBtn) el.browseBtn.textContent = t.browse_btn || '📁 Choose Image';
-            if (el.chooseAnotherBtn) el.chooseAnotherBtn.textContent = t.choose_another_btn || '📁 Choose Another Image';
-            if (el.predictBtn) el.predictBtn.textContent = t.analyze_btn || '🔍 Analyze Plant';
+            if (el.browseBtn) el.browseBtn.textContent = t.browse_btn || 'Choose Image';
+            if (el.chooseAnotherBtn) el.chooseAnotherBtn.textContent = t.choose_another_btn || 'Choose Another Image';
+            if (el.predictBtn) el.predictBtn.textContent = t.analyze_btn || 'Analyze Plant';
             if (el.loadingText) el.loadingText.textContent = t.loading_text || 'Analyzing your plant...';
-            if (el.footerText) el.footerText.textContent = t.footer || '🌱 Keep your plants healthy with Plant Care';
-            
-            // Tutorial button
+            if (el.footerText) el.footerText.textContent = t.footer || 'Keep your plants healthy with Plant Care';
+
             if (el.tutorialLabel) {
                 let tutorialText = t.tutorial_btn || 'Tutorial';
                 tutorialText = tutorialText.replace(/[🎓]/g, '').trim();
                 el.tutorialLabel.textContent = tutorialText || 'Tutorial';
             }
-            
-            // Translation button
+
             if (el.langLabel) {
                 el.langLabel.textContent = lang === 'en' ? 'English ⇄ नेपाली' : 'नेपाली ⇄ अंग्रेजी';
             }
-            
-            // Update result if exists
+
             if (diseaseData) {
                 fetch(`/api/care/${encodeURIComponent(diseaseData.class)}?lang=${lang}`)
                     .then(res => res.json())
@@ -783,16 +845,15 @@ HTML_TEMPLATE = '''
                         displayResult(diseaseData);
                     });
             }
-            
-            // Update care title
+
             if (el.careTitleText) {
-                const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
+                const titleText = lang === 'en' ? (t.care_title || 'Post Care Guidance') : (t.care_title || 'पश्चात् सेवा मार्गदर्शन');
                 el.careTitleText.textContent = titleText;
             }
             if (el.langBadge) {
                 el.langBadge.textContent = lang === 'en' ? 'EN' : 'ने';
             }
-            
+
             currentLang = lang;
         }
 
@@ -803,24 +864,22 @@ HTML_TEMPLATE = '''
             const isHealthy = data.class.includes('Healthy');
             const t = UI_TEXT;
             const lang = currentLang;
-            
-            // Get translated disease name
+
             let displayName = data.class;
             if (DISEASE_TRANSLATIONS[lang] && DISEASE_TRANSLATIONS[lang][data.class]) {
                 displayName = DISEASE_TRANSLATIONS[lang][data.class];
             } else {
                 displayName = data.class.replace(/_/g, ' ');
             }
-            
+
             el.resultDiv.className = isHealthy ? 'healthy' : 'disease';
-            
+
             let emoji = isHealthy ? '✅' : '⚠️';
-            let statusText = isHealthy ? (t.resultHealthy || '🌿 Your plant appears healthy!') : (t.resultDisease || '⚠️ Disease detected!');
-            
+            let statusText = isHealthy ? (t.resultHealthy || 'Your plant appears healthy!') : (t.resultDisease || 'Disease detected!');
+
             el.resultIcon.textContent = emoji;
             el.resultName.textContent = displayName;
-            
-            // Format confidence with Nepali numbers if in Nepali mode
+
             let confidenceText = data.confidence.toFixed(2);
             let confidenceLabel = lang === 'en' ? 'Confidence' : 'विश्वसनीयता';
             if (lang === 'ne') {
@@ -829,29 +888,27 @@ HTML_TEMPLATE = '''
             } else {
                 el.resultConfidence.textContent = `${confidenceLabel}: ${confidenceText}%`;
             }
-            
+
             el.progressFill.style.width = `${data.confidence}%`;
             el.resultStatus.textContent = statusText;
             el.resultStatus.style.color = isHealthy ? '#2e7d32' : '#c62828';
-            
+
             if (data.care) {
                 el.careSection.classList.add('visible');
-                
-                const titleText = lang === 'en' ? (t.care_title || '📋 Post Care Guidance') : (t.care_title || '📋 पश्चात् सेवा मार्गदर्शन');
+
+                const titleText = lang === 'en' ? (t.care_title || 'Post Care Guidance') : (t.care_title || 'पश्चात् सेवा मार्गदर्शन');
                 el.careTitleText.textContent = titleText;
                 const badge = lang === 'en' ? 'EN' : 'ने';
                 el.langBadge.textContent = badge;
-                
+
                 let html = '';
-                
-                // What to do now - Contains Immediate Actions and Treatment Options
+
                 let hasImmediateActions = data.care.immediate_actions && data.care.immediate_actions.length > 0;
                 let hasTreatmentOptions = data.care.treatment_options && data.care.treatment_options.length > 0;
-                
+
                 if (hasImmediateActions || hasTreatmentOptions) {
                     html += `<div class="care-section-block"><h4>${t.what_to_do || 'What to do now'}</h4>`;
-                    
-                    // Immediate Actions
+
                     if (hasImmediateActions) {
                         html += `<p><strong>${t.immediate_actions || 'Immediate Actions'}:</strong></p>
                                  <ul>`;
@@ -860,8 +917,7 @@ HTML_TEMPLATE = '''
                         });
                         html += `</ul>`;
                     }
-                    
-                    // Treatment Options
+
                     if (hasTreatmentOptions) {
                         html += `<p><strong>${t.treatment_options || 'Treatment Options'}:</strong></p>
                                  <ul>`;
@@ -870,11 +926,10 @@ HTML_TEMPLATE = '''
                         });
                         html += `</ul>`;
                     }
-                    
+
                     html += `</div>`;
                 }
-                
-                // Prevention
+
                 if (data.care.prevention) {
                     html += `
                         <div class="care-section-block">
@@ -883,8 +938,7 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-                
-                // Safety warnings
+
                 if (data.care.safety_warnings && data.care.safety_warnings.length > 0) {
                     html += `
                         <div class="care-section-block">
@@ -895,8 +949,7 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-                
-                // Notice
+
                 if (data.care.notice) {
                     html += `
                         <div class="care-section-block notice">
@@ -905,12 +958,12 @@ HTML_TEMPLATE = '''
                         </div>
                     `;
                 }
-                
+
                 el.careSteps.innerHTML = html;
             } else {
                 el.careSection.classList.remove('visible');
             }
-            
+
             el.resultDiv.style.display = 'block';
         }
 
@@ -923,13 +976,13 @@ HTML_TEMPLATE = '''
                 container.innerHTML = `
                     <div class="dummy-video">
                         <div class="big-icon">🎓</div>
-                        <div>🌿 Plant Care Tutorial</div>
+                        <div>Plant Care Tutorial</div>
                         <div style="font-size:18px; margin-top:10px;">How to diagnose your plant diseases</div>
-                        <div class="lang-label">🔊 English Tutorial</div>
+                        <div class="lang-label">English Tutorial</div>
                         <div style="font-size:14px; margin-top:20px; opacity:0.7;">
-                            📸 Step 1: Upload leaf image<br>
-                            🔍 Step 2: Click Analyze<br>
-                            📋 Step 3: View results & care
+                            Step 1: Upload leaf image<br>
+                            Step 2: Click Analyze<br>
+                            Step 3: View results & care
                         </div>
                     </div>
                 `;
@@ -937,13 +990,13 @@ HTML_TEMPLATE = '''
                 container.innerHTML = `
                     <div class="dummy-video">
                         <div class="big-icon">🎓</div>
-                        <div>🌿 प्लान्ट केयर ट्यूटोरियल</div>
+                        <div>प्लान्ट केयर ट्यूटोरियल</div>
                         <div style="font-size:18px; margin-top:10px;">आफ्नो बिरुवाको रोग कसरी पत्ता लगाउने</div>
-                        <div class="lang-label">🔊 नेपाली ट्यूटोरियल</div>
+                        <div class="lang-label">नेपाली ट्यूटोरियल</div>
                         <div style="font-size:14px; margin-top:20px; opacity:0.7;">
-                            📸 चरण १: पातको फोटो अपलोड गर्नुहोस्<br>
-                            🔍 चरण २: विश्लेषण क्लिक गर्नुहोस्<br>
-                            📋 चरण ३: नतिजा र हेरचाह हेर्नुहोस्
+                            चरण १: पातको फोटो अपलोड गर्नुहोस्<br>
+                            चरण २: विश्लेषण क्लिक गर्नुहोस्<br>
+                            चरण ३: नतिजा र हेरचाह हेर्नुहोस्
                         </div>
                     </div>
                 `;
@@ -965,7 +1018,7 @@ HTML_TEMPLATE = '''
                 el.resultDiv.style.display = 'none';
                 el.careSection.classList.remove('visible');
                 diseaseData = null;
-                
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     el.preview.src = e.target.result;
@@ -1010,7 +1063,6 @@ HTML_TEMPLATE = '''
             }
         });
 
-        // Remove image button
         el.removeImageBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             removeImage();
@@ -1021,20 +1073,20 @@ HTML_TEMPLATE = '''
         // ============================================
         el.predictBtn.addEventListener('click', async function() {
             if (!selectedFile) return;
-            
+
             const formData = new FormData();
             formData.append('file', selectedFile);
-            
+
             this.disabled = true;
             el.loadingDiv.style.display = 'block';
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
-            
+
             try {
                 const response = await fetch('/api/predict', { method: 'POST', body: formData });
                 const data = await response.json();
                 el.loadingDiv.style.display = 'none';
-                
+
                 if (data.success) {
                     diseaseData = data;
                     const careResponse = await fetch(`/api/care/${encodeURIComponent(data.class)}?lang=${currentLang}`);
@@ -1058,7 +1110,7 @@ HTML_TEMPLATE = '''
                 el.resultName.textContent = 'Connection Error';
                 el.resultStatus.textContent = error.message;
             }
-            
+
             this.disabled = false;
         });
 
@@ -1070,7 +1122,6 @@ HTML_TEMPLATE = '''
             translatePage(newLang);
         });
 
-        // New Green Speaker button listener
         el.speechGreenBtn.addEventListener('click', readCareInstructions);
 
         el.tutorialBtn.addEventListener('click', showTutorial);
@@ -1156,7 +1207,7 @@ def get_speech_text():
         })
         
     except Exception as e:
-        print(f"❌ Speech error: {e}")
+        print(f"Speech error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/predict', methods=['POST'])
@@ -1201,7 +1252,7 @@ def predict():
         })
 
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
+        print(f"Prediction error: {e}")
         import traceback
         traceback.print_exc()
         clear_memory()
@@ -1236,11 +1287,11 @@ def cleanup(error):
 # ============================================
 if __name__ == '__main__':
     print("\n" + "=" * 50)
-    print("🌿 PLANT CARE - COMPLETE FINAL VERSION")
+    print("PLANT CARE - COMPLETE FINAL VERSION")
     print("=" * 50)
-    print(f"📊 Detects: {len(class_names)} plant conditions")
-    print(f"🗣️  Languages: English + Nepali (FULL TRANSLATION)")
-    print(f"🔊 Read Out Loud: Google gTTS (No credit card needed!)")
-    print(f"🚀 Server: http://127.0.0.1:5000")
+    print(f"Detects: {len(class_names)} plant conditions")
+    print(f"Languages: English + Nepali (FULL TRANSLATION)")
+    print(f"Read Out Loud: Google gTTS (No credit card needed!)")
+    print(f"Server: http://127.0.0.1:5000")
     print("=" * 50 + "\n")
     app.run(debug=True, threaded=True)

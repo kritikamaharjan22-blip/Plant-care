@@ -9,14 +9,14 @@ def clear_memory():
     gc.collect()
     tf.keras.backend.clear_session()
     gc.collect()
-    print("🗑️ Memory cleared")
+    print("Memory cleared")
 
 def print_memory():
     """Print current memory usage"""
     try:
         process = psutil.Process(os.getpid())
         memory_mb = process.memory_info().rss / 1024 / 1024
-        print(f"💾 Memory: {memory_mb:.1f} MB")
+        print(f"Memory: {memory_mb:.1f} MB")
         return memory_mb
     except:
         return 0
