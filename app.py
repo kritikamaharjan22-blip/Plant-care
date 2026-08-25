@@ -1,4 +1,4 @@
-# app.py - COMPLETE FINAL VERSION WITH BACKGROUND IMAGE
+# app.py - COMPLETE FINAL VERSION WITH HYBRID SPEECH (Browser API + Piper)
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -9,11 +9,11 @@ import json
 import gc
 import tensorflow as tf
 from werkzeug.utils import secure_filename
-
-# NEW IMPORTS FOR gTTS (Audio generation without saving files)
-import io
 import base64
-from gtts import gTTS
+import io
+
+# Import Piper TTS
+from piper import PiperVoice
 
 # Import our modules
 from garbage_collection import clear_memory, print_memory, cleanup_variables
@@ -31,6 +31,23 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+# ============================================
+# LOAD PIPER VOICE MODEL (Google Voice - for Nepali only)
+# ============================================
+print("\nLoading Piper voice model...")
+
+# Path to the Google Nepali voice model
+voice_path = "voices/ne/ne_NP/google/ne_NP-google-medium.onnx"
+
+try:
+    voice = PiperVoice.load(voice_path)
+    print("✅ Piper voice loaded successfully")
+    print("   Voice: Google Nepali Medium (for Nepali TTS)")
+except Exception as e:
+    print(f"❌ Error loading Piper voice: {e}")
+    print("Make sure the voice file exists at:", voice_path)
+    voice = None
 
 # ============================================
 # LOAD MODEL
@@ -88,7 +105,7 @@ DISEASE_TRANSLATIONS = {
 }
 
 # ============================================
-# HTML - COMPLETE FINAL VERSION WITH BACKGROUND IMAGE
+# HTML - COMPLETE FINAL VERSION WITH HYBRID SPEECH
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -164,7 +181,6 @@ HTML_TEMPLATE = '''
             font-size: 3.4rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 60px rgba(67, 160, 71, 0.2);
             text-align: center;
             padding: 0.1rem 1.5rem;
             border-radius: 0px;
@@ -174,7 +190,7 @@ HTML_TEMPLATE = '''
             -webkit-backdrop-filter: none;
             box-shadow: none;
             -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.2);
-            text-shadow: 0 0 30px rgba(67, 160, 71, 0.3), 0 2px 20px rgba(0,0,0,0.5);
+            text-shadow: 0 0 50px rgba(67, 160, 71, 0.5), 0 0 100px rgba(67, 160, 71, 0.25), 0 4px 30px rgba(0,0,0,0.6);
         }
 
         /* ===== SUBTITLE ===== */
@@ -239,9 +255,9 @@ HTML_TEMPLATE = '''
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* ===== CONTAINER (White box - toned down) ===== */
+        /* ===== CONTAINER (Brighter - slightly darker than upload area) ===== */
         .container {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             border-radius: 20px;
@@ -272,10 +288,16 @@ HTML_TEMPLATE = '''
             display: inline-block;
             margin: 0 3px;
         }
-        .badge-rice { background: #fef3c7; color: #92400e; }
-        .badge-potato { background: #fde8e8; color: #9b2c2c; }
+        .badge-rice { 
+            background: #e8d5a8; 
+            color: #6a4e1a; 
+        }
+        .badge-potato { 
+            background: #e8c8c0; 
+            color: #7a3a2a; 
+        }
 
-        /* ===== UPLOAD AREA ===== */
+        /* ===== UPLOAD AREA (Slightly darker than container) ===== */
         #dropZone {
             border: 2px dashed #4a8a4a;
             border-radius: 16px;
@@ -283,12 +305,20 @@ HTML_TEMPLATE = '''
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
-            background: rgba(241, 248, 233, 0.65);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             position: relative;
             z-index: 1;
         }
-        #dropZone:hover { border-color: #2a7a2a; background: rgba(232, 245, 233, 0.75); }
-        #dropZone.dragover { border-color: #1a6a1a; background: rgba(200, 230, 201, 0.75); }
+        #dropZone:hover { 
+            border-color: #2a7a2a; 
+            background: rgba(255, 255, 255, 0.80); 
+        }
+        #dropZone.dragover { 
+            border-color: #1a6a1a; 
+            background: rgba(255, 255, 255, 0.85); 
+        }
         #dropZone.has-image { padding: 12px 20px; }
         .upload-icon { font-size: 48px; margin-bottom: 6px; }
         .hint { color: #4a7a4a; font-size: 14px; margin-top: 4px; }
@@ -337,7 +367,7 @@ HTML_TEMPLATE = '''
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            background: #f44336;
+            background: #c0392b;
             color: white;
             border: none;
             font-size: 16px;
@@ -347,11 +377,11 @@ HTML_TEMPLATE = '''
             justify-content: center;
             z-index: 10;
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         .remove-image-btn:hover {
             transform: scale(1.1);
-            background: #d32f2f;
+            background: #a93226;
         }
         .remove-image-btn.show {
             display: flex;
@@ -406,7 +436,18 @@ HTML_TEMPLATE = '''
         .progress-fill { height: 100%; background: linear-gradient(90deg, #43a047, #2e7d32); transition: width 0.8s ease-out; border-radius: 4px; }
         .result-status { text-align: center; margin-top: 10px; font-size: 14px; font-weight: 500; }
 
-        .care-section { margin-top: 15px; padding: 14px; background: #f5f5f5; border-radius: 12px; display: none; }
+        /* ===== CARE SECTION (with thicker border and more shadow) ===== */
+        .care-section { 
+            margin-top: 15px; 
+            padding: 14px; 
+            background: rgba(245, 245, 245, 0.5); 
+            border-radius: 12px; 
+            display: none; 
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 2.5px solid rgba(160, 160, 160, 0.35);
+            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.14);
+        }
         .care-section.visible { display: block; }
 
         .care-title {
@@ -453,19 +494,25 @@ HTML_TEMPLATE = '''
             font-weight: 600;
         }
 
+        /* ===== CARE BLOCKS (with thicker border and more shadow) ===== */
         .care-section-block {
-            margin: 8px 0;
-            padding: 10px 14px;
-            border-radius: 10px;
-            background: #f9f9f9;
+            margin: 6px 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(249, 249, 249, 0.45);
             border-left: 4px solid #43a047;
+            border: 2.5px solid rgba(160, 160, 160, 0.25);
+            border-left-width: 4px;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
         }
-        .care-section-block h4 { color: #2e7d32; margin-bottom: 4px; font-size: 14px; font-weight: 600; }
-        .care-section-block ul { padding-left: 20px; margin: 0; }
-        .care-section-block ul li { margin-bottom: 3px; color: #333; font-size: 13px; line-height: 1.5; }
-        .care-section-block p { margin: 0; color: #333; font-size: 13px; line-height: 1.5; }
-        .care-section-block strong { color: #2e7d32; }
-        .care-section-block.notice { border-left-color: #ff9800; background: #fff3e0; }
+        .care-section-block h4 { color: #2e5a2e; margin-bottom: 3px; font-size: 13px; font-weight: 600; }
+        .care-section-block ul { padding-left: 18px; margin: 0; }
+        .care-section-block ul li { margin-bottom: 2px; color: #3a4a3a; font-size: 12.5px; line-height: 1.5; }
+        .care-section-block p { margin: 0; color: #3a4a3a; font-size: 12.5px; line-height: 1.5; }
+        .care-section-block strong { color: #2e5a2e; }
+        .care-section-block.notice { border-left-color: #d4952a; background: rgba(255, 243, 224, 0.35); }
 
         .footer { 
             text-align: center; 
@@ -504,7 +551,7 @@ HTML_TEMPLATE = '''
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #f44336;
+            background: #c0392b;
             color: white;
             border: none;
             font-size: 20px;
@@ -513,7 +560,7 @@ HTML_TEMPLATE = '''
             align-items: center;
             justify-content: center;
         }
-        .tutorial-modal-content .close-btn:hover { background: #c62828; }
+        .tutorial-modal-content .close-btn:hover { background: #a93226; }
         .tutorial-modal-content .dummy-video {
             width: 100%;
             min-height: 300px;
@@ -685,6 +732,8 @@ HTML_TEMPLATE = '''
         let selectedFile = null;
         let diseaseData = null;
         let isSpeaking = false;
+        let audioElement = null;
+        let isPiperFallback = false;  // Track if we're using Piper fallback
 
         // ============================================
         // CONVERT ENGLISH NUMBER TO NEPALI
@@ -738,7 +787,7 @@ HTML_TEMPLATE = '''
         };
 
         // ============================================
-        // PLAY AUDIO FROM BASE64 (gTTS version)
+        // PLAY AUDIO FROM BASE64 (Piper version - for Nepali)
         // ============================================
         function playAudioFromBase64(base64Data) {
             if (isSpeaking) {
@@ -746,39 +795,164 @@ HTML_TEMPLATE = '''
                 return;
             }
             
-            const audio = new Audio('data:audio/mp3;base64,' + base64Data);
+            if (audioElement) {
+                audioElement.pause();
+                audioElement = null;
+            }
             
-            audio.onplay = () => {
+            audioElement = new Audio('data:audio/wav;base64,' + base64Data);
+            
+            audioElement.onplay = () => {
                 isSpeaking = true;
-                if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.add('speaking');
-                }
+                updateSpeechButton();
             };
             
-            audio.onended = () => {
+            audioElement.onended = () => {
                 isSpeaking = false;
-                if (el.speechGreenBtn) {
-                    el.speechGreenBtn.classList.remove('speaking');
-                }
+                updateSpeechButton();
+                audioElement = null;
             };
             
-            audio.play();
+            audioElement.onerror = () => {
+                isSpeaking = false;
+                updateSpeechButton();
+                audioElement = null;
+            };
+            
+            audioElement.play();
         }
 
         // ============================================
-        // READ CARE INSTRUCTIONS
+        // STOP SPEAKING (works for both browser speech and Piper)
         // ============================================
-        function readCareInstructions() {
-            if (!diseaseData) {
-                alert(currentLang === 'en' ? 'Please diagnose a plant first!' : 'कृपया पहिले बिरुवा निदान गर्नुहोस्!');
-                return;
+        function stopSpeaking() {
+            // Stop browser speech synthesis
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
             }
-
-            if (isSpeaking) {
-                stopSpeaking();
-                return;
+            
+            // Stop Piper audio
+            if (audioElement) {
+                audioElement.pause();
+                audioElement = null;
             }
+            
+            isSpeaking = false;
+            isPiperFallback = false;
+            updateSpeechButton();
+        }
 
+        // ============================================
+        // UPDATE SPEECH BUTTON
+        // ============================================
+        function updateSpeechButton() {
+            const btn = el.speechGreenBtn;
+            if (btn) {
+                if (isSpeaking) {
+                    btn.classList.add('speaking');
+                    btn.textContent = '⏹️';
+                } else {
+                    btn.classList.remove('speaking');
+                    btn.textContent = '🔊';
+                }
+            }
+        }
+
+        // ============================================
+        // BUILD ENGLISH SPEECH TEXT
+        // ============================================
+        function buildEnglishSpeechText() {
+            const isHealthy = diseaseData.class.includes('Healthy');
+            let displayName = diseaseData.class;
+            if (DISEASE_TRANSLATIONS['en'] && DISEASE_TRANSLATIONS['en'][diseaseData.class]) {
+                displayName = DISEASE_TRANSLATIONS['en'][diseaseData.class];
+            } else {
+                displayName = diseaseData.class.replace(/_/g, ' ');
+            }
+            
+            let text = `Diagnosis: ${displayName}. ... `;
+            text += `Post Care Guidance. `;
+            
+            if (diseaseData.care) {
+                if (diseaseData.care.immediate_actions && diseaseData.care.immediate_actions.length > 0) {
+                    text += `What to do now. Immediate Actions: `;
+                    text += diseaseData.care.immediate_actions.join('. ') + '. ';
+                }
+                if (diseaseData.care.treatment_options && diseaseData.care.treatment_options.length > 0) {
+                    text += `Treatment Options: `;
+                    text += diseaseData.care.treatment_options.join('. ') + '. ';
+                }
+                if (diseaseData.care.prevention) {
+                    text += `Prevention: ${diseaseData.care.prevention}. `;
+                }
+                if (diseaseData.care.safety_warnings && diseaseData.care.safety_warnings.length > 0) {
+                    text += `Safety warnings: `;
+                    text += diseaseData.care.safety_warnings.join('. ') + '. ';
+                }
+                if (diseaseData.care.notice) {
+                    text += `Notice: ${diseaseData.care.notice}. `;
+                }
+            }
+            
+            // Clean text (remove emojis/special chars)
+            text = text.replace(/[^\w\s.,;:!?()\- ]/g, '');
+            return text;
+        }
+
+        // ============================================
+        // SPEAK ENGLISH USING BROWSER SPEECH SYNTHESIS
+        // ============================================
+        function speakEnglishWithBrowser() {
+            // Cancel any existing speech first
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            
+            // Build the text
+            let text = buildEnglishSpeechText();
+            
+            // Use browser's SpeechSynthesis API
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            
+            // Track speaking state
+            utterance.onstart = () => {
+                isSpeaking = true;
+                isPiperFallback = false;
+                updateSpeechButton();
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                isPiperFallback = false;
+                updateSpeechButton();
+            };
+            
+            utterance.onerror = () => {
+                // Only use fallback if it was a real error, not when user canceled
+                if (isSpeaking) {
+                    isSpeaking = false;
+                    isPiperFallback = true;
+                    updateSpeechButton();
+                    // Try Piper as fallback for English
+                    speakNepaliWithPiper();
+                }
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // ============================================
+        // SPEAK NEPALI USING PIPER (Backend)
+        // ============================================
+        function speakNepaliWithPiper() {
+            // Cancel any browser speech first
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            
             fetch(`/api/speech_text?lang=${currentLang}`)
                 .then(res => res.json())
                 .then(data => {
@@ -794,14 +968,31 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // STOP SPEAKING
+        // READ CARE INSTRUCTIONS (Hybrid: English=Browser, Nepali=Piper)
         // ============================================
-        function stopSpeaking() {
-            document.querySelectorAll('audio').forEach(audio => audio.pause());
-            isSpeaking = false;
-            if (el.speechGreenBtn) {
-                el.speechGreenBtn.classList.remove('speaking');
+        function readCareInstructions() {
+            if (!diseaseData) {
+                alert(currentLang === 'en' ? 'Please diagnose a plant first!' : 'कृपया पहिले बिरुवा निदान गर्नुहोस्!');
+                return;
             }
+
+            // If speaking, stop (toggle behavior)
+            if (isSpeaking) {
+                stopSpeaking();
+                return;
+            }
+
+            // Reset fallback flag
+            isPiperFallback = false;
+
+            // For English - use browser's built-in speech
+            if (currentLang === 'en') {
+                speakEnglishWithBrowser();
+                return;
+            }
+
+            // For Nepali - use Piper (backend)
+            speakNepaliWithPiper();
         }
 
         // ============================================
@@ -1072,6 +1263,7 @@ HTML_TEMPLATE = '''
                 el.resultDiv.style.display = 'none';
                 el.careSection.classList.remove('visible');
                 diseaseData = null;
+                stopSpeaking();
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -1100,6 +1292,7 @@ HTML_TEMPLATE = '''
                 el.resultDiv.style.display = 'none';
                 el.careSection.classList.remove('visible');
                 diseaseData = null;
+                stopSpeaking();
                 el.fileInput.files = e.dataTransfer.files;
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -1135,6 +1328,7 @@ HTML_TEMPLATE = '''
             el.loadingDiv.style.display = 'block';
             el.resultDiv.style.display = 'none';
             el.careSection.classList.remove('visible');
+            stopSpeaking();
             
             try {
                 const response = await fetch('/api/predict', { method: 'POST', body: formData });
@@ -1219,49 +1413,75 @@ def get_ui_text_api():
 
 @app.route('/api/speech_text', methods=['GET'])
 def get_speech_text():
-    """Generate audio using gTTS (No credit card, no storage needed!)"""
+    """Generate audio using Piper TTS (for Nepali only)"""
+    global voice
+    
     try:
         lang = request.args.get('lang', 'en')
         
-        # Get the disease class from the session (saved when you analyzed the image)
+        # Check if voice is loaded
+        if voice is None:
+            return jsonify({'success': False, 'error': 'Piper voice not loaded'}), 500
+        
+        # Get the disease class from the session
         disease_class = session.get('last_disease_class')
         if not disease_class:
             return jsonify({'success': False, 'error': 'No disease data available'}), 400
         
-        # Get care instructions from your translation.py
+        # Get care instructions
         care = get_care(disease_class, lang)
         disease_data = {'class': disease_class, 'care': care}
         ui_text = get_ui_text(lang)
         
-        # Build the clean text using your speech.py (removes emojis)
+        # Build the text
         text = build_speech_text(disease_data, ui_text, lang)
+        print(f"Text to speak: {text[:100]}...")
         
         # ============================================
-        # gTTS GENERATION CODE (Happens in RAM, no file saved)
+        # PIPER TTS GENERATION
         # ============================================
-        # Google needs 'ne' for Nepali, or 'en' for English
-        tts_lang = 'ne' if lang == 'ne' else 'en'
+        audio_chunks = voice.synthesize(text)
         
-        # Create the audio file IN MEMORY (doesn't touch your hard drive)
-        tts = gTTS(text=text, lang=tts_lang, slow=False) 
+        # Collect audio data from each chunk
+        audio_bytes = b''
+        for chunk in audio_chunks:
+            audio_bytes += chunk.audio_int16_bytes
         
-        # Save it to a temporary RAM buffer
-        audio_bytes = io.BytesIO()
-        tts.write_to_fp(audio_bytes)
-        audio_bytes.seek(0) # Rewind the buffer back to the start
+        print(f"Audio bytes length: {len(audio_bytes)}")
         
-        # Convert the audio bytes to Base64 text so we can send it over the internet to the browser
-        audio_base64 = base64.b64encode(audio_bytes.read()).decode('utf-8')
+        # Create WAV in memory
+        wav_buffer = io.BytesIO()
+        
+        # Write WAV header manually
+        wav_buffer.write(b'RIFF')
+        wav_buffer.write((36 + len(audio_bytes)).to_bytes(4, 'little'))
+        wav_buffer.write(b'WAVE')
+        wav_buffer.write(b'fmt ')
+        wav_buffer.write((16).to_bytes(4, 'little'))
+        wav_buffer.write((1).to_bytes(2, 'little'))   # PCM
+        wav_buffer.write((1).to_bytes(2, 'little'))   # Mono
+        wav_buffer.write((22050).to_bytes(4, 'little'))  # Sample rate
+        wav_buffer.write((44100).to_bytes(4, 'little'))  # Byte rate
+        wav_buffer.write((2).to_bytes(2, 'little'))   # Block align
+        wav_buffer.write((16).to_bytes(2, 'little'))  # Bits per sample
+        wav_buffer.write(b'data')
+        wav_buffer.write(len(audio_bytes).to_bytes(4, 'little'))
+        wav_buffer.write(audio_bytes)
+        
+        wav_data = wav_buffer.getvalue()
+        audio_base64 = base64.b64encode(wav_data).decode('utf-8')
         # ============================================
         
         return jsonify({
             'success': True,
-            'audio_base64': audio_base64, # Send audio to browser
+            'audio_base64': audio_base64,
             'language': lang
         })
         
     except Exception as e:
         print(f"Speech error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/predict', methods=['POST'])
@@ -1329,6 +1549,7 @@ def health():
         'app': 'Plant Care',
         'model_loaded': model is not None,
         'classes': len(class_names),
+        'voice_loaded': voice is not None,
         'memory_mb': print_memory()
     })
 
@@ -1345,7 +1566,8 @@ if __name__ == '__main__':
     print("=" * 50)
     print(f"Detects: {len(class_names)} plant conditions")
     print(f"Languages: English + Nepali (FULL TRANSLATION)")
-    print(f"Read Out Loud: Google gTTS (No credit card needed!)")
+    print(f"TTS Engine: Browser API (English) + Piper (Nepali)")
+    print(f"Voice: Google Nepali Medium (for Nepali)")
     print(f"Server: http://127.0.0.1:5000")
     print("=" * 50 + "\n")
     app.run(debug=True, threaded=True)

@@ -16,13 +16,29 @@ def build_speech_text(disease_data, ui_text, lang='en'):
     if not disease_data:
         return None
     
+    # Get the disease class name
+    disease_class = disease_data.get('class', '')
     care = disease_data.get('care', {})
     text = ''
     
+    # Get display name - from care title or class name
+    if disease_class:
+        disease_display = care.get('title', disease_class.replace('_', ' '))
+        disease_display = clean_text_for_speech(disease_display)
+    else:
+        disease_display = 'Unknown'
+    
     # Get translations based on language
     if lang == 'en':
+        # FIRST: Read the disease/health status
+        text += f"Diagnosis: {disease_display}. "
+        
+        # Add a 3-second pause (three periods creates a longer pause)
+        text += "... "
+        
+        # THEN: Care guidance
         # Care title
-        text = f"{ui_text.get('care_title', 'Post Care Guidance')}. "
+        text += f"{ui_text.get('care_title', 'Post Care Guidance')}. "
         
         # What to do now - Immediate Actions
         if care.get('immediate_actions') and len(care['immediate_actions']) > 0:
@@ -52,8 +68,15 @@ def build_speech_text(disease_data, ui_text, lang='en'):
             text += f"{ui_text.get('notice', 'Notice')}: {clean_text_for_speech(care['notice'])}. "
     
     else:  # Nepali
+        # FIRST: Read the disease/health status
+        text += f"निदान: {disease_display}. "
+        
+        # Add a 3-second pause
+        text += "... "
+        
+        # THEN: Care guidance
         # Care title
-        text = f"{ui_text.get('care_title', 'पश्चात् सेवा मार्गदर्शन')}. "
+        text += f"{ui_text.get('care_title', 'पश्चात् सेवा मार्गदर्शन')}. "
         
         # What to do now - Immediate Actions
         if care.get('immediate_actions') and len(care['immediate_actions']) > 0:
