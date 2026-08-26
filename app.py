@@ -1,4 +1,4 @@
-# app.py - COMPLETE FINAL VERSION WITH HYBRID SPEECH (Browser API + Piper)
+# app.py - COMPLETE FINAL VERSION WITH PROFESSIONAL VIDEO CONTROLS
 from flask import Flask, request, jsonify, render_template_string, session
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
@@ -42,10 +42,10 @@ voice_path = "voices/ne/ne_NP/google/ne_NP-google-medium.onnx"
 
 try:
     voice = PiperVoice.load(voice_path)
-    print("✅ Piper voice loaded successfully")
+    print("Piper voice loaded successfully")
     print("   Voice: Google Nepali Medium (for Nepali TTS)")
 except Exception as e:
-    print(f"❌ Error loading Piper voice: {e}")
+    print(f"Error loading Piper voice: {e}")
     print("Make sure the voice file exists at:", voice_path)
     voice = None
 
@@ -105,7 +105,7 @@ DISEASE_TRANSLATIONS = {
 }
 
 # ============================================
-# HTML - COMPLETE FINAL VERSION WITH HYBRID SPEECH
+# HTML - COMPLETE FINAL VERSION
 # ============================================
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -522,7 +522,7 @@ HTML_TEMPLATE = '''
             font-weight: 500;
         }
 
-        /* Tutorial Modal */
+        /* ===== TUTORIAL MODAL ===== */
         .tutorial-modal {
             display: none;
             position: fixed;
@@ -530,52 +530,160 @@ HTML_TEMPLATE = '''
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 99999;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         .tutorial-modal.show { display: flex; }
         .tutorial-modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            max-width: 750px;
-            width: 90%;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 16px;
+            max-width: 900px;
+            width: 95%;
             position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
         .tutorial-modal-content .close-btn {
             position: absolute;
-            top: -14px;
-            right: -14px;
-            width: 36px;
-            height: 36px;
+            top: -18px;
+            right: -18px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #c0392b;
+            background: #e53935;
             color: white;
             border: none;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
-        .tutorial-modal-content .close-btn:hover { background: #a93226; }
-        .tutorial-modal-content .dummy-video {
+        .tutorial-modal-content .close-btn:hover {
+            transform: scale(1.1);
+            background: #c62828;
+        }
+        
+        .tutorial-video-container {
             width: 100%;
-            min-height: 300px;
-            background: linear-gradient(135deg, #1a3a2b, #2a6a3a);
-            border-radius: 12px;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+            background: #000;
+        }
+        .tutorial-video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tutorial-title {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 0 8px 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== VIDEO CONTROLS - PROFESSIONAL STYLE ===== */
+        .video-controls {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
-            padding: 2rem;
-            text-align: center;
+            gap: 6px;
+            padding: 10px 16px 8px 16px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0 0 12px 12px;
+            margin-top: 2px;
         }
-        .tutorial-modal-content .dummy-video .big-icon { font-size: 4rem; margin-bottom: 0.8rem; }
-        .tutorial-modal-content .dummy-video .step-list { font-size: 0.95rem; opacity: 0.85; margin-top: 0.8rem; line-height: 1.8; }
+
+        .video-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .video-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .video-btn .btn-label {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        .video-btn svg {
+            flex-shrink: 0;
+        }
+
+        .video-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 400;
+            min-width: 90px;
+            text-align: center;
+            font-family: 'Segoe UI', monospace;
+            letter-spacing: 0.3px;
+        }
+
+        .video-speed-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .video-speed-label:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .video-speed-select {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 400;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .video-speed-select:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .video-speed-select option {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
 
         @media (max-width: 650px) {
             .content-wrapper {
@@ -611,6 +719,38 @@ HTML_TEMPLATE = '''
             .container { padding: 18px; }
             .plant-info .info-label { font-size: 0.85rem; }
             .badge { font-size: 0.85rem; padding: 3px 10px; }
+            .tutorial-modal-content .close-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 18px;
+                top: -14px;
+                right: -14px;
+            }
+            .video-controls {
+                gap: 4px;
+                padding: 8px 10px 6px 10px;
+            }
+            .video-btn {
+                padding: 4px 6px;
+                font-size: 12px;
+            }
+            .video-btn .btn-label {
+                font-size: 10px;
+            }
+            .video-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+            .video-time {
+                font-size: 11px;
+                min-width: 70px;
+            }
+            .video-speed-label {
+                font-size: 11px;
+            }
+            .video-speed-select {
+                font-size: 11px;
+            }
         }
 
         @media (max-width: 450px) {
@@ -623,7 +763,7 @@ HTML_TEMPLATE = '''
     </style>
 </head>
 <body>
-    <!-- ===== CONTENT WRAPPER (Vertical block with blur) ===== -->
+    <!-- ===== CONTENT WRAPPER ===== -->
     <div class="content-wrapper">
 
         <!-- ===== HEADER ===== -->
@@ -698,22 +838,67 @@ HTML_TEMPLATE = '''
 
     </div>
 
-    <!-- TUTORIAL MODAL -->
+    <!-- ===== TUTORIAL MODAL ===== -->
     <div class="tutorial-modal" id="tutorialModal">
         <div class="tutorial-modal-content">
             <button class="close-btn" id="tutorialCloseBtn">✕</button>
-            <div id="tutorialVideoContainer">
-                <div class="dummy-video">
-                    <div class="big-icon">🌿</div>
-                    <div style="font-size: 1.3rem; font-weight: 600;">Plant Care Tutorial</div>
-                    <div style="font-size: 1rem; margin-top: 0.5rem;">How to diagnose your plant diseases</div>
-                    <div class="step-list">
-                        Step 1: Upload a clear leaf image<br>
-                        Step 2: Click the Analyze button<br>
-                        Step 3: View results and care guidance<br>
-                        Step 4: Use the speaker button to listen
-                    </div>
-                </div>
+            <div class="tutorial-title" id="tutorialTitle">📖 Plant Care Tutorial</div>
+            <div class="tutorial-video-container">
+                <video id="tutorialVideo" controls autoplay>
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <!-- ===== PROFESSIONAL VIDEO CONTROLS ===== -->
+            <div class="video-controls">
+                <button class="video-btn" id="rewindBtn" title="Rewind 5 seconds">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11,19 2,12 11,5 11,19"/>
+                        <polygon points="19,19 10,12 19,5 19,19"/>
+                    </svg>
+                    <span class="btn-label">5</span>
+                </button>
+                
+                <button class="video-btn" id="playPauseBtn" title="Play/Pause">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon id="playIcon" points="5,3 19,12 5,21"/>
+                        <rect id="pauseIcon" x="6" y="4" width="4" height="16" display="none"/>
+                        <rect id="pauseIcon2" x="14" y="4" width="4" height="16" display="none"/>
+                    </svg>
+                </button>
+                
+                <button class="video-btn" id="forwardBtn" title="Forward 5 seconds">
+                    <span class="btn-label">5</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13,19 22,12 13,5 13,19"/>
+                        <polygon points="5,19 14,12 5,5 5,19"/>
+                    </svg>
+                </button>
+                
+                <span class="video-time" id="videoTime">00:00 / 00:00</span>
+                
+                <button class="video-btn" id="downloadBtn" title="Download Tutorial">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </button>
+                
+                <label class="video-speed-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                    <select class="video-speed-select" id="speedSelect">
+                        <option value="0.5">0.5x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2x</option>
+                    </select>
+                </label>
             </div>
         </div>
     </div>
@@ -733,7 +918,8 @@ HTML_TEMPLATE = '''
         let diseaseData = null;
         let isSpeaking = false;
         let audioElement = null;
-        let isPiperFallback = false;  // Track if we're using Piper fallback
+        let isPiperFallback = false;
+        let videoControlsInitialized = false;
 
         // ============================================
         // CONVERT ENGLISH NUMBER TO NEPALI
@@ -782,9 +968,164 @@ HTML_TEMPLATE = '''
             tutorialBtn: document.getElementById('tutorialBtn'),
             tutorialModal: document.getElementById('tutorialModal'),
             tutorialCloseBtn: document.getElementById('tutorialCloseBtn'),
-            tutorialVideoContainer: document.getElementById('tutorialVideoContainer'),
+            tutorialVideo: document.getElementById('tutorialVideo'),
+            tutorialTitle: document.getElementById('tutorialTitle'),
             speechGreenBtn: document.getElementById('speechGreenBtn')
         };
+
+        // ============================================
+        // FORMAT TIME (MM:SS)
+        // ============================================
+        function formatTime(seconds) {
+            if (isNaN(seconds) || !isFinite(seconds)) return '00:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // ============================================
+        // INIT VIDEO CONTROLS
+        // ============================================
+        function initVideoControls() {
+            if (videoControlsInitialized) return;
+            
+            const video = el.tutorialVideo;
+            const rewindBtn = document.getElementById('rewindBtn');
+            const forwardBtn = document.getElementById('forwardBtn');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const speedSelect = document.getElementById('speedSelect');
+            const timeDisplay = document.getElementById('videoTime');
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const pauseIcon2 = document.getElementById('pauseIcon2');
+
+            // Rewind 5 seconds
+            rewindBtn.addEventListener('click', function() {
+                video.currentTime = Math.max(0, video.currentTime - 5);
+            });
+
+            // Forward 5 seconds
+            forwardBtn.addEventListener('click', function() {
+                video.currentTime = Math.min(video.duration || 0, video.currentTime + 5);
+            });
+
+            // Play/Pause with icon toggle
+            function updatePlayPauseIcon() {
+                if (video.paused) {
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    pauseIcon2.style.display = 'none';
+                } else {
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                    pauseIcon2.style.display = 'block';
+                }
+            }
+
+            playPauseBtn.addEventListener('click', function() {
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+                updatePlayPauseIcon();
+            });
+
+            // Update icon when video state changes
+            video.addEventListener('play', updatePlayPauseIcon);
+            video.addEventListener('pause', updatePlayPauseIcon);
+
+            // Update time display
+            video.addEventListener('timeupdate', function() {
+                const current = formatTime(video.currentTime);
+                const total = formatTime(video.duration);
+                timeDisplay.textContent = `${current} / ${total}`;
+            });
+
+            // Speed control
+            speedSelect.addEventListener('change', function() {
+                video.playbackRate = parseFloat(this.value);
+            });
+
+            // Download video
+            downloadBtn.addEventListener('click', function() {
+                const link = document.createElement('a');
+                link.href = video.src;
+                link.download = video.src.split('/').pop();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (!el.tutorialModal.classList.contains('show')) return;
+                
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    video.currentTime = Math.max(0, video.currentTime - 5);
+                }
+                else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    video.currentTime = Math.min(video.duration || 0, video.currentTime + 5);
+                }
+                else if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
+                    updatePlayPauseIcon();
+                }
+            });
+            
+            // Initialize icon state
+            updatePlayPauseIcon();
+            videoControlsInitialized = true;
+        }
+
+        // ============================================
+        // TUTORIAL
+        // ============================================
+        function showTutorial() {
+            let videoPath = '';
+            let titleText = '';
+            
+            if (currentLang === 'en') {
+                videoPath = '{{ url_for("static", filename="Tutorial_Video/English_Tutorial.mp4") }}';
+                titleText = '📖 Plant Care Tutorial (English)';
+            } else {
+                videoPath = '{{ url_for("static", filename="Tutorial_Video/Nepali_Tutorial.mp4") }}';
+                titleText = '📖 प्लान्ट केयर ट्यूटोरियल (नेपाली)';
+            }
+            
+            el.tutorialVideo.src = videoPath;
+            el.tutorialTitle.textContent = titleText;
+            el.tutorialVideo.load();
+            el.tutorialModal.classList.add('show');
+            
+            if (!videoControlsInitialized) {
+                initVideoControls();
+                videoControlsInitialized = true;
+            }
+            
+            setTimeout(() => {
+                el.tutorialVideo.play();
+            }, 300);
+        }
+
+        function closeTutorial() {
+            el.tutorialVideo.pause();
+            el.tutorialVideo.src = '';
+            el.tutorialModal.classList.remove('show');
+            
+            const timeDisplay = document.getElementById('videoTime');
+            if (timeDisplay) {
+                timeDisplay.textContent = '00:00 / 00:00';
+            }
+        }
 
         // ============================================
         // PLAY AUDIO FROM BASE64 (Piper version - for Nepali)
@@ -823,15 +1164,13 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // STOP SPEAKING (works for both browser speech and Piper)
+        // STOP SPEAKING
         // ============================================
         function stopSpeaking() {
-            // Stop browser speech synthesis
             if (window.speechSynthesis) {
                 window.speechSynthesis.cancel();
             }
             
-            // Stop Piper audio
             if (audioElement) {
                 audioElement.pause();
                 audioElement = null;
@@ -894,7 +1233,6 @@ HTML_TEMPLATE = '''
                 }
             }
             
-            // Clean text (remove emojis/special chars)
             text = text.replace(/[^\w\s.,;:!?()\- ]/g, '');
             return text;
         }
@@ -903,21 +1241,17 @@ HTML_TEMPLATE = '''
         // SPEAK ENGLISH USING BROWSER SPEECH SYNTHESIS
         // ============================================
         function speakEnglishWithBrowser() {
-            // Cancel any existing speech first
             if (window.speechSynthesis) {
                 window.speechSynthesis.cancel();
             }
             
-            // Build the text
             let text = buildEnglishSpeechText();
             
-            // Use browser's SpeechSynthesis API
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
             utterance.rate = 0.9;
             utterance.pitch = 1;
             
-            // Track speaking state
             utterance.onstart = () => {
                 isSpeaking = true;
                 isPiperFallback = false;
@@ -931,12 +1265,10 @@ HTML_TEMPLATE = '''
             };
             
             utterance.onerror = () => {
-                // Only use fallback if it was a real error, not when user canceled
                 if (isSpeaking) {
                     isSpeaking = false;
                     isPiperFallback = true;
                     updateSpeechButton();
-                    // Try Piper as fallback for English
                     speakNepaliWithPiper();
                 }
             };
@@ -945,10 +1277,9 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // SPEAK NEPALI USING PIPER (Backend)
+        // SPEAK NEPALI USING PIPER
         // ============================================
         function speakNepaliWithPiper() {
-            // Cancel any browser speech first
             if (window.speechSynthesis) {
                 window.speechSynthesis.cancel();
             }
@@ -968,7 +1299,7 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // READ CARE INSTRUCTIONS (Hybrid: English=Browser, Nepali=Piper)
+        // READ CARE INSTRUCTIONS
         // ============================================
         function readCareInstructions() {
             if (!diseaseData) {
@@ -976,27 +1307,23 @@ HTML_TEMPLATE = '''
                 return;
             }
 
-            // If speaking, stop (toggle behavior)
             if (isSpeaking) {
                 stopSpeaking();
                 return;
             }
 
-            // Reset fallback flag
             isPiperFallback = false;
 
-            // For English - use browser's built-in speech
             if (currentLang === 'en') {
                 speakEnglishWithBrowser();
                 return;
             }
 
-            // For Nepali - use Piper (backend)
             speakNepaliWithPiper();
         }
 
         // ============================================
-        // REMOVE IMAGE FUNCTION
+        // REMOVE IMAGE
         // ============================================
         function removeImage() {
             selectedFile = null;
@@ -1019,7 +1346,7 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // TRANSLATION FUNCTION
+        // TRANSLATION
         // ============================================
         function translatePage(lang) {
             fetch(`/api/get_ui_text?lang=${lang}`)
@@ -1213,47 +1540,6 @@ HTML_TEMPLATE = '''
         }
 
         // ============================================
-        // TUTORIAL
-        // ============================================
-        function showTutorial() {
-            const container = el.tutorialVideoContainer;
-            if (currentLang === 'en') {
-                container.innerHTML = `
-                    <div class="dummy-video">
-                        <div class="big-icon">🌿</div>
-                        <div>Plant Care Tutorial</div>
-                        <div style="font-size:18px; margin-top:10px;">How to diagnose your plant diseases</div>
-                        <div class="lang-label">English Tutorial</div>
-                        <div style="font-size:14px; margin-top:20px; opacity:0.7;">
-                            Step 1: Upload leaf image<br>
-                            Step 2: Click Analyze<br>
-                            Step 3: View results & care
-                        </div>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="dummy-video">
-                        <div class="big-icon">🌿</div>
-                        <div>प्लान्ट केयर ट्यूटोरियल</div>
-                        <div style="font-size:18px; margin-top:10px;">आफ्नो बिरुवाको रोग कसरी पत्ता लगाउने</div>
-                        <div class="lang-label">नेपाली ट्यूटोरियल</div>
-                        <div style="font-size:14px; margin-top:20px; opacity:0.7;">
-                            चरण १: पातको फोटो अपलोड गर्नुहोस्<br>
-                            चरण २: विश्लेषण क्लिक गर्नुहोस्<br>
-                            चरण ३: नतिजा र हेरचाह हेर्नुहोस्
-                        </div>
-                    </div>
-                `;
-            }
-            el.tutorialModal.classList.add('show');
-        }
-
-        function closeTutorial() {
-            el.tutorialModal.classList.remove('show');
-        }
-
-        // ============================================
         // FILE UPLOAD
         // ============================================
         el.fileInput.addEventListener('change', function() {
@@ -1371,11 +1657,17 @@ HTML_TEMPLATE = '''
         });
 
         el.speechGreenBtn.addEventListener('click', readCareInstructions);
-
         el.tutorialBtn.addEventListener('click', showTutorial);
         el.tutorialCloseBtn.addEventListener('click', closeTutorial);
+        
         el.tutorialModal.addEventListener('click', function(e) {
             if (e.target === this) closeTutorial();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTutorial();
+            }
         });
 
         // ============================================
@@ -1419,58 +1711,47 @@ def get_speech_text():
     try:
         lang = request.args.get('lang', 'en')
         
-        # Check if voice is loaded
         if voice is None:
             return jsonify({'success': False, 'error': 'Piper voice not loaded'}), 500
         
-        # Get the disease class from the session
         disease_class = session.get('last_disease_class')
         if not disease_class:
             return jsonify({'success': False, 'error': 'No disease data available'}), 400
         
-        # Get care instructions
         care = get_care(disease_class, lang)
         disease_data = {'class': disease_class, 'care': care}
         ui_text = get_ui_text(lang)
         
-        # Build the text
         text = build_speech_text(disease_data, ui_text, lang)
         print(f"Text to speak: {text[:100]}...")
         
-        # ============================================
-        # PIPER TTS GENERATION
-        # ============================================
         audio_chunks = voice.synthesize(text)
         
-        # Collect audio data from each chunk
         audio_bytes = b''
         for chunk in audio_chunks:
             audio_bytes += chunk.audio_int16_bytes
         
         print(f"Audio bytes length: {len(audio_bytes)}")
         
-        # Create WAV in memory
         wav_buffer = io.BytesIO()
         
-        # Write WAV header manually
         wav_buffer.write(b'RIFF')
         wav_buffer.write((36 + len(audio_bytes)).to_bytes(4, 'little'))
         wav_buffer.write(b'WAVE')
         wav_buffer.write(b'fmt ')
         wav_buffer.write((16).to_bytes(4, 'little'))
-        wav_buffer.write((1).to_bytes(2, 'little'))   # PCM
-        wav_buffer.write((1).to_bytes(2, 'little'))   # Mono
-        wav_buffer.write((22050).to_bytes(4, 'little'))  # Sample rate
-        wav_buffer.write((44100).to_bytes(4, 'little'))  # Byte rate
-        wav_buffer.write((2).to_bytes(2, 'little'))   # Block align
-        wav_buffer.write((16).to_bytes(2, 'little'))  # Bits per sample
+        wav_buffer.write((1).to_bytes(2, 'little'))
+        wav_buffer.write((1).to_bytes(2, 'little'))
+        wav_buffer.write((22050).to_bytes(4, 'little'))
+        wav_buffer.write((44100).to_bytes(4, 'little'))
+        wav_buffer.write((2).to_bytes(2, 'little'))
+        wav_buffer.write((16).to_bytes(2, 'little'))
         wav_buffer.write(b'data')
         wav_buffer.write(len(audio_bytes).to_bytes(4, 'little'))
         wav_buffer.write(audio_bytes)
         
         wav_data = wav_buffer.getvalue()
         audio_base64 = base64.b64encode(wav_data).decode('utf-8')
-        # ============================================
         
         return jsonify({
             'success': True,
@@ -1511,7 +1792,6 @@ def predict():
         os.remove(filepath)
         cleanup_variables(img, img_array, predictions)
 
-        # Save to session for speech feature
         session['last_disease_class'] = predicted_class
 
         lang = request.args.get('lang', 'en')
@@ -1568,6 +1848,7 @@ if __name__ == '__main__':
     print(f"Languages: English + Nepali (FULL TRANSLATION)")
     print(f"TTS Engine: Browser API (English) + Piper (Nepali)")
     print(f"Voice: Google Nepali Medium (for Nepali)")
+    print(f"Tutorials: English & Nepali video tutorials")
     print(f"Server: http://127.0.0.1:5000")
     print("=" * 50 + "\n")
     app.run(debug=True, threaded=True)
